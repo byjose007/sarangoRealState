@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="32" height="32">
+  <rect width="512" height="512" rx="100" fill="#FFFFFF"/>
+  <rect width="492" height="492" x="10" y="10" rx="92" fill="none" stroke="#D4AF37" stroke-width="16" opacity="0.4"/>
+  <g transform="translate(256, 256) scale(0.85)">
+    <!-- Sarango S Curve -->
+    <path d="M 60 -180 C -60 -190 -130 -120 -130 -40 C -130 50 -50 90 40 120 C 130 150 160 200 130 260 C 100 320 -20 330 -110 290" fill="none" stroke="#0B1E36" stroke-width="48" stroke-linecap="round"/>
+    <!-- Gold Building Tower -->
+    <path d="M -80 0 L -80 180 L -10 180 L -10 -70 Z" fill="#C69233"/>
+    <!-- Navy Building Tower -->
+    <path d="M -10 -70 L -10 180 L 70 180 L 70 -30 Z" fill="#0B1E36"/>
+    <!-- Gold Swoosh -->
+    <path d="M -180 200 Q -10 130 180 230" fill="none" stroke="#C69233" stroke-width="24" stroke-linecap="round"/>
+  </g>
+</svg>

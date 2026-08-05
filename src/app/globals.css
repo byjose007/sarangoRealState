@@ -1,0 +1,214 @@
+@import 'leaflet/dist/leaflet.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --------------------------------------------------------------------------
+   Leaflet OpenStreetMap custom styling overrides
+   -------------------------------------------------------------------------- */
+.leaflet-container {
+  font-family: inherit;
+  width: 100%;
+  height: 100%;
+  background-color: hsl(var(--muted) / 0.3) !important;
+  z-index: 1;
+}
+
+.custom-osm-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background-color: hsl(var(--surface)) !important;
+  color: hsl(var(--foreground)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: inherit !important;
+}
+
+.leaflet-popup-tip {
+  background-color: hsl(var(--surface)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Vestra tokens
+   Palette: ink #0E1512 · verdigris #1F5D53 · brass #B98A44 · porcelain #F6F5F2
+   Type:    Fraunces (display) · Manrope (body) · IBM Plex Mono (data)
+   -------------------------------------------------------------------------- */
+@layer base {
+  :root {
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-body: 'Manrope', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+    --background: 48 16% 96%;
+    --foreground: 154 20% 7%;
+    --surface: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 154 20% 7%;
+    --muted: 45 12% 92%;
+    --muted-foreground: 156 6% 42%;
+    --primary: 170 50% 24%;
+    --primary-foreground: 48 30% 97%;
+    --primary-soft: 168 26% 92%;
+    --brass: 36 46% 50%;
+    --brass-foreground: 40 40% 12%;
+    --border: 150 8% 87%;
+    --input: 150 8% 85%;
+    --ring: 170 50% 24%;
+    --destructive: 4 62% 47%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 44% 34%;
+    --shadow: 160 30% 10%;
+  }
+
+  .dark {
+    --background: 160 18% 5%;
+    --foreground: 45 14% 93%;
+    --surface: 162 14% 9%;
+    --card: 162 14% 9%;
+    --card-foreground: 45 14% 93%;
+    --muted: 162 10% 14%;
+    --muted-foreground: 150 6% 62%;
+    --primary: 168 38% 52%;
+    --primary-foreground: 160 30% 8%;
+    --primary-soft: 168 22% 16%;
+    --brass: 38 52% 60%;
+    --brass-foreground: 40 40% 10%;
+    --border: 160 8% 18%;
+    --input: 160 8% 22%;
+    --ring: 168 38% 52%;
+    --destructive: 4 60% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 40% 52%;
+    --shadow: 0 0% 0%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background font-sans text-[0.95rem] leading-relaxed text-foreground antialiased;
+    font-feature-settings: 'ss01', 'cv11';
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display font-semibold text-foreground;
+    font-variation-settings: 'SOFT' 0, 'WONK' 0;
+  }
+
+  ::selection {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full border-4 border-solid border-transparent bg-clip-content;
+    background-color: hsl(var(--muted-foreground) / 0.4);
+  }
+}
+
+@layer components {
+  /* Section eyebrow: mono label + brass hairline — the plan-sheet signature */
+  .eyebrow {
+    @apply inline-flex items-center gap-3 font-mono text-eyebrow uppercase text-muted-foreground;
+  }
+  .eyebrow::before {
+    content: '';
+    @apply h-px w-8 bg-brass;
+  }
+
+  /* Frosted layer used for the floating search bar and sticky header */
+  .glass {
+    @apply border border-white/40 bg-white/70 shadow-glass backdrop-blur-xl;
+  }
+  .dark .glass {
+    @apply border-white/10 bg-white/[0.06];
+  }
+
+  /* Architect corner ticks used on hero imagery and gallery frames */
+  .tick-frame {
+    position: relative;
+  }
+  .tick-frame::before,
+  .tick-frame::after {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-color: hsl(var(--brass));
+    pointer-events: none;
+  }
+  .tick-frame::before {
+    top: 14px;
+    left: 14px;
+    border-top: 1px solid;
+    border-left: 1px solid;
+  }
+  .tick-frame::after {
+    right: 14px;
+    bottom: 14px;
+    border-right: 1px solid;
+    border-bottom: 1px solid;
+  }
+
+  .link-underline {
+    @apply relative after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full;
+  }
+}
+
+@layer utilities {
+  .balance {
+    text-wrap: balance;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .mask-fade-r {
+    -webkit-mask-image: linear-gradient(90deg, #000 78%, transparent);
+    mask-image: linear-gradient(90deg, #000 78%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

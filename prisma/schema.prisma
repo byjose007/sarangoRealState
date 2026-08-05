@@ -1,0 +1,300 @@
+// Prisma schema for Vestra's admin panel / CRM.
+// Mirrors the frontend contracts in src/types/index.ts wherever the shape
+// overlaps (Property, Agent) and adds the CRM-only entities (User, Client,
+// Lead, LeadNote, ActivityLog). Cities and amenities stay as static
+// reference data (src/data/reference.ts) — they're taxonomy, not something
+// the brief asked to manage from the admin panel.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  AGENT
+}
+
+enum ListingStatus {
+  FOR_SALE
+  FOR_RENT
+  SOLD
+  NEW_DEVELOPMENT
+}
+
+enum PropertyType {
+  VILLA
+  APARTMENT
+  TOWNHOUSE
+  PENTHOUSE
+  LOFT
+  ESTATE
+  OFFICE
+}
+
+enum PricePeriod {
+  MONTH
+  TOTAL
+}
+
+enum EnergyRating {
+  A
+  B
+  C
+  D
+}
+
+enum DocumentType {
+  PDF
+  DWG
+  ZIP
+}
+
+enum LeadStage {
+  NEW
+  CONTACTED
+  VISIT_SCHEDULED
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+enum LeadSource {
+  WEBSITE_VIEWING
+  WEBSITE_CONTACT
+  WEBSITE_AGENT_MESSAGE
+  MANUAL
+  REFERRAL
+  OTHER
+}
+
+enum ActivityEntity {
+  PROPERTY
+  CLIENT
+  LEAD
+  AGENT
+  USER
+}
+
+enum ActivityAction {
+  CREATED
+  UPDATED
+  STAGE_CHANGED
+  NOTE_ADDED
+  ASSIGNED
+  STATUS_CHANGED
+  DELETED
+}
+
+/// Login credentials + role. Separate from Agent (the public marketing
+/// profile) so an ADMIN doesn't need a fake Agent record.
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(AGENT)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  agent        Agent?
+  leadNotes    LeadNote[]
+  activityLogs ActivityLog[]
+
+  @@map("users")
+}
+
+model Agent {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  name            String
+  role            String
+  license         String?
+  avatar          String
+  phone           String
+  email           String
+  address         String?
+  citySlug        String
+  bio             String    @db.Text
+  languages       String[]  @default([])
+  specialties     String[]  @default([])
+  experienceYears Int       @default(0)
+  dealsClosed     Int       @default(0)
+  rating          Float     @default(0)
+  social          Json      @default("{}")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+
+  user            User?     @relation(fields: [userId], references: [id])
+  userId          String?   @unique
+
+  properties      Property[]
+  leads           Lead[]
+
+  @@map("agents")
+}
+
+model Property {
+  id           String        @id @default(cuid())
+  reference    String        @unique
+  slug         String        @unique
+  title        String
+  description  String        @db.Text
+  status       ListingStatus @default(FOR_SALE)
+  type         PropertyType
+  price        Int
+  pricePeriod  PricePeriod   @default(TOTAL)
+  address      String
+  citySlug     String
+  lat          Float
+  lng          Float
+  bedrooms     Int
+  bathrooms    Int
+  garages      Int           @default(0)
+  area         Int
+  landArea     Int           @default(0)
+  yearBuilt    Int?
+  energyRating EnergyRating?
+  featured     Boolean       @default(false)
+  amenityIds   String[]      @default([])
+  videoUrl     String?
+  tourUrl      String?
+  views        Int           @default(0)
+  hoaFee       Int?
+  propertyTax  Int           @default(0)
+  nearby       Json          @default("[]")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  deletedAt    DateTime?
+
+  agent        Agent              @relation(fields: [agentId], references: [id])
+  agentId      String
+  images       PropertyImage[]
+  floorPlans   FloorPlan[]
+  documents    PropertyDocument[]
+  leads        Lead[]
+
+  @@index([agentId])
+  @@index([status])
+  @@index([citySlug])
+  @@map("properties")
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  url        String
+  position   Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId String
+
+  @@map("property_images")
+}
+
+model FloorPlan {
+  id         String @id @default(cuid())
+  name       String
+  level      Int
+  area       Int
+  bedrooms   Int
+  bathrooms  Int
+  /// SVG outline points, drawn inline on the property detail page.
+  outline    String @db.Text
+  rooms      Json   @default("[]")
+
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId String
+
+  @@map("floor_plans")
+}
+
+model PropertyDocument {
+  id         String       @id @default(cuid())
+  name       String
+  type       DocumentType
+  size       String
+  href       String
+
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId String
+
+  @@map("property_documents")
+}
+
+model Client {
+  id        String     @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String
+  phone     String?
+  notes     String?    @db.Text
+  source    LeadSource @default(MANUAL)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  leads     Lead[]
+
+  @@index([email])
+  @@map("clients")
+}
+
+model Lead {
+  id              String     @id @default(cuid())
+  stage           LeadStage  @default(NEW)
+  source          LeadSource @default(MANUAL)
+  message         String?    @db.Text
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  closedAt        DateTime?
+
+  client          Client   @relation(fields: [clientId], references: [id])
+  clientId        String
+  property        Property? @relation(fields: [propertyId], references: [id])
+  propertyId      String?
+  assignedAgent   Agent?   @relation(fields: [assignedAgentId], references: [id])
+  assignedAgentId String?
+
+  notes           LeadNote[]
+
+  @@index([stage])
+  @@index([assignedAgentId])
+  @@index([propertyId])
+  @@map("leads")
+}
+
+/// Append-only notes thread on a lead.
+model LeadNote {
+  id           String   @id @default(cuid())
+  body         String   @db.Text
+  createdAt    DateTime @default(now())
+
+  lead         Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId       String
+  author       User     @relation(fields: [authorUserId], references: [id])
+  authorUserId String
+
+  @@map("lead_notes")
+}
+
+/// Generic audit trail keyed by entityType+entityId (not a hard FK) so log
+/// rows survive the entity they describe being deleted.
+model ActivityLog {
+  id          String         @id @default(cuid())
+  entityType  ActivityEntity
+  entityId    String
+  action      ActivityAction
+  metadata    Json?
+  createdAt   DateTime       @default(now())
+
+  actor       User?          @relation(fields: [actorUserId], references: [id])
+  actorUserId String?
+
+  @@index([entityType, entityId])
+  @@map("activity_logs")
+}

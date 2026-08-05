@@ -1,0 +1,157 @@
+# Vestra — premium real estate template
+
+A production-ready Next.js 15 template for a survey-first residential brokerage.
+100 listings, 20 agents, 30 journal articles, 10 cities, full filtering, comparison,
+favourites, mortgage maths, floor plans, 360° tour and a complete SEO layer.
+
+Built as a commercial-grade template: strict TypeScript, modular architecture,
+no dead files, `next build` passes with 165 pre-rendered pages.
+
+---
+
+## Quick start
+
+```bash
+npm install
+cp .env.example .env.local   # optional — everything works without keys
+npm run dev                  # http://localhost:3000
+```
+
+Other scripts:
+
+| Script              | What it does                                  |
+| ------------------- | --------------------------------------------- |
+| `npm run dev`       | Dev server with Fast Refresh                  |
+| `npm run build`     | Production build (SSG for listings/blog/agents)|
+| `npm run start`     | Serve the production build                    |
+| `npm run lint`      | ESLint (next/core-web-vitals + TS)            |
+| `npm run typecheck` | `tsc --noEmit`                                |
+| `npm run format`    | Prettier + Tailwind class sorting             |
+
+Node 18.18+ required (developed on Node 22).
+
+---
+
+## Design direction
+
+The brief asked for premium and minimal; the identity avoids the generic
+"luxury real estate" look by borrowing from **surveyor's drawings** instead of
+lifestyle photography.
+
+- **Palette** — ink `#0E1512`, verdigris `#1F5D53` (primary), brass `#B98A44`
+  (accent hairlines only), porcelain `#F6F5F2` (canvas), plus a full dark theme.
+  All colours are HSL channel tokens in `globals.css`, so one class works in
+  both themes.
+- **Type** — Fraunces (display, high contrast, used with restraint), Manrope
+  (body), IBM Plex Mono (every number, reference and label — prices, areas,
+  parcel codes). The mono/serif split is what makes the pages feel like records
+  rather than brochures.
+- **Signature** — architectural annotation over imagery: corner ticks
+  (`.tick-frame`), a brass dimension line on the hero, and a `VS-014-TX` parcel
+  reference on every card, gallery plate and detail header.
+- **Motion** — one orchestrated hero entrance, scroll reveals, hover scale on
+  photography. `prefers-reduced-motion` disables all of it globally.
+
+Fonts are loaded via `<link>` rather than `next/font` so the project builds in
+network-restricted environments. To switch, import from `next/font/google` in
+`src/app/layout.tsx` and assign the CSS variables `--font-display`,
+`--font-body`, `--font-mono`.
+
+---
+
+## Architecture
+
+```
+src/
+├─ app/                 # App Router: routes, metadata, sitemap, robots
+│  ├─ properties/[slug] # SSG detail pages (generateStaticParams)
+│  ├─ agents/[slug]
+│  ├─ blog/[slug]
+│  ├─ about · contact · compare · favorites
+│  └─ coming-soon · maintenance · not-found · error · loading
+├─ components/
+│  ├─ ui/               # primitives: button, input, modal, drawer, tabs…
+│  ├─ layout/           # navbar (mega menu), footer, chat, preloader…
+│  ├─ home/             # one file per home-page section
+│  ├─ property/         # cards, gallery, map, calculator, plans, forms
+│  ├─ blog/             # article card + markdown renderer
+│  └─ shared/           # smart-image, reveal, counter, headings, rating
+├─ features/            # composed flows (property search, contact form)
+├─ services/            # data access — the only module that knows the source
+├─ data/                # deterministic mock catalogue
+├─ store/               # Zustand: collections + UI state
+├─ hooks/ lib/ types/ constants/ providers/ actions/
+```
+
+**Decisions worth knowing:**
+
+1. **`services/property-service.ts` is the seam.** Filtering, sorting,
+   pagination, similarity scoring and facets all live there. Swap the array
+   lookups for `fetch` calls and no component changes.
+2. **Filters live in the URL.** `usePropertyFilters` serialises every filter to
+   query params, so results are shareable, bookmarkable and back-button safe.
+3. **Mock data is deterministic.** A seeded PRNG (`mulberry32`) generates the
+   catalogue, so server and client render identical markup — no hydration drift.
+4. **Persisted state is hydration-guarded.** Favourites, comparison and recently
+   viewed use `zustand/persist` behind a `useMounted()` check.
+5. **One carousel engine.** Embla only — Swiper was dropped deliberately rather
+   than shipping two overlapping libraries.
+6. **Maps degrade gracefully.** With no API key, `PropertyMap` renders an
+   in-house plan view with positioned markers and popovers. Set
+   `NEXT_PUBLIC_MAP_PROVIDER=google|mapbox` plus a key to switch.
+7. **Images fall back.** `SmartImage` wraps `next/image` and swaps to a seeded
+   placeholder on error, so a dead demo asset never breaks a layout.
+8. **Server actions stand in for the CRM** (`src/actions/leads.ts`), validated
+   with the same Zod schemas the client forms use.
+
+---
+
+## Implemented features
+
+**Pages** — Home · Listings (grid / list / map) · Property detail · Agents index
+· Agent profile · Journal index (category filter) · Article · About · Contact ·
+Compare · Saved homes · Coming soon · Maintenance · 404 · error boundary.
+
+**Search & filtering** — hero advanced search with buy/rent/new tabs, keyword,
+city, type, price range, beds, baths, floor area, amenities, garages, six sort
+orders, pagination, URL-synced state, mobile filter drawer, ⌘K search modal.
+
+**Property detail** — editorial gallery with lightbox and keyboard nav, tabbed
+record (details, amenities, floor plans as inline SVG, downloadable documents,
+what's nearby), lazy video walkthrough, draggable 360° tour, location map,
+mortgage calculator with amortisation chart (Recharts), schedule-a-visit form,
+agent contact form, WhatsApp, share sheet, similar listings, recently viewed,
+JSON-LD `SingleFamilyResidence`.
+
+**Cross-site** — favourites, up to four-way comparison with a sticky tray,
+recently viewed history, quick-view modal, dark mode, sticky auto-hiding header,
+mega menu, scroll reveals, animated counters, skeletons and loading/empty/error
+states, toasts, floating contact launcher, back to top, preloader.
+
+**SEO & quality** — per-page metadata, Open Graph, Twitter cards, canonical
+URLs, `sitemap.xml` (all 150+ routes), `robots.txt`, organisation JSON-LD,
+breadcrumbs, semantic landmarks, skip link, visible focus rings, ARIA on all
+interactive controls, reduced-motion support, responsive from 360px up.
+
+---
+
+## Customising
+
+- **Brand & copy** — `src/constants/site.ts` (name, offices, phone, hours) and
+  `src/constants/navigation.ts` (menus).
+- **Colours & type** — `src/app/globals.css` tokens and `tailwind.config.ts`.
+- **Catalogue** — `src/data/*`. Replace `properties.ts` / `agents.ts` /
+  `articles.ts` with your API and keep the `types/index.ts` contracts.
+- **Images** — `src/data/images.ts` holds the Unsplash IDs; point `unsplash()`
+  at your own CDN and add the hostname to `next.config.mjs` → `remotePatterns`.
+
+## Deploying
+
+Works unchanged on Vercel (`vercel deploy`), or `npm run build && npm run start`
+behind any Node host. Set `NEXT_PUBLIC_SITE_URL` in production so metadata,
+canonicals and the sitemap resolve to the right origin.
+
+---
+
+Demo content is fictional. Photography is served from Unsplash for preview
+purposes — license your own assets before going live.
