@@ -15,14 +15,3 @@ declare module 'next-auth' {
     } & DefaultSession['user'];
   }
 }
-
-// `next-auth/jwt` re-exports its JWT type from `@auth/core/jwt` via `export
-// *` — augmenting the re-exporting module doesn't merge into the original
-// interface, so the callback signatures inside @auth/core (which import JWT
-// from its own source module) never see it. Augment the source directly.
-declare module '@auth/core/jwt' {
-  interface JWT {
-    role: UserRole;
-    agentId: string | null;
-  }
-}

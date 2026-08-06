@@ -2,6 +2,13 @@ import type { Agent } from '@/types';
 import { avatar } from './images';
 import { cities } from './reference';
 
+/**
+ * Fixture data for blog byline attribution ONLY — `Article.authorId` in
+ * `data/articles.ts` references these ids. The real agent directory (used
+ * by /agents, property listings, the admin panel) is Prisma-backed via
+ * `@/services/agent-service`. Blog content isn't managed from the admin
+ * panel, so this stays static rather than being unified with the DB.
+ */
 export const agents: Agent[] = [
   {
     id: 'ag-1',

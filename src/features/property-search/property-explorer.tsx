@@ -2,7 +2,8 @@
 
 import * as React from 'react';
 import { LayoutGrid, Map as MapIcon, Rows3, SlidersHorizontal } from 'lucide-react';
-import { searchAll, searchProperties } from '@/services/property-service';
+import type { Paginated, Property } from '@/types';
+import { searchAllAction, searchPropertiesAction } from '@/actions/public-catalog';
 import { getSortOptions } from '@/constants/navigation';
 import { PER_PAGE } from '@/constants/site';
 import { useTranslation } from '@/i18n/context';
@@ -28,28 +29,36 @@ export function PropertyExplorer() {
   const { filters, view, write, activeCount, reset } = usePropertyFilters();
   const { t, isEs } = useTranslation();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [result, setResult] = React.useState<Paginated<Property>>({
+    items: [],
+    total: 0,
+    page: 1,
+    perPage: PER_PAGE,
+    totalPages: 1,
+  });
+  const [mapItems, setMapItems] = React.useState<Property[]>([]);
   const key = JSON.stringify(filters);
   const debouncedKey = useDebounce(key, 220);
 
   const sortOptions = React.useMemo(() => getSortOptions(t), [t]);
 
   React.useEffect(() => {
+    let active = true;
     setLoading(true);
-    const timer = setTimeout(() => setLoading(false), 260);
-    return () => clearTimeout(timer);
+    Promise.all([searchPropertiesAction({ ...filters, perPage: PER_PAGE }), searchAllAction(filters)]).then(
+      ([searchResult, allResult]) => {
+        if (!active) return;
+        setResult(searchResult);
+        setMapItems(allResult.slice(0, 40));
+        setLoading(false);
+      },
+    );
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedKey]);
-
-  const result = React.useMemo(
-    () => searchProperties({ ...filters, perPage: PER_PAGE }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [debouncedKey],
-  );
-  const mapItems = React.useMemo(
-    () => searchAll(filters).slice(0, 40),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [debouncedKey],
-  );
 
   const views: { value: 'grid' | 'list' | 'map'; icon: typeof LayoutGrid; label: string }[] = [
     { value: 'grid', icon: LayoutGrid, label: isEs ? 'Cuadrícula' : 'Grid' },

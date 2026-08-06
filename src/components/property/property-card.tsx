@@ -52,7 +52,7 @@ export function PropertyCard({ property, priority, className, layout = 'grid' }:
           {property.featured ? <Badge variant="glass">{isEs ? 'Auditada' : 'Surveyed'}</Badge> : null}
         </div>
 
-        <div className="absolute right-4 top-4 flex flex-col gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100">
+        <div className="absolute right-4 top-4 z-10 flex flex-col gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100">
           <FavoriteButton propertyId={property.id} title={property.title} />
           <CompareButton propertyId={property.id} title={property.title} />
           <button

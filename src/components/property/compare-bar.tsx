@@ -1,13 +1,15 @@
 'use client';
 
+import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import type { Property } from '@/types';
 import { MAX_COMPARE, useCollections } from '@/store/collections';
 import { useMounted } from '@/hooks/use-mounted';
 import { useTranslation } from '@/i18n/context';
-import { getPropertiesByIds } from '@/services/property-service';
+import { getPropertiesByIdsAction } from '@/actions/public-catalog';
 import { SmartImage } from '@/components/shared/smart-image';
 import { Button } from '@/components/ui/button';
 
@@ -19,7 +21,24 @@ export function CompareBar() {
   const compare = useCollections((state) => state.compare);
   const toggleCompare = useCollections((state) => state.toggleCompare);
   const clearCompare = useCollections((state) => state.clearCompare);
-  const items = getPropertiesByIds(compare);
+  const compareKey = compare.join(',');
+  const [items, setItems] = React.useState<Property[]>([]);
+
+  React.useEffect(() => {
+    if (!compare.length) {
+      setItems([]);
+      return;
+    }
+    let active = true;
+    getPropertiesByIdsAction(compare).then((result) => {
+      if (active) setItems(result);
+    });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compareKey]);
+
   const hidden = !mounted || !items.length || pathname === '/compare';
 
   return (

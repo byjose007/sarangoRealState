@@ -11,18 +11,28 @@ import { JournalPreview } from '@/components/home/journal-preview';
 import { Partners } from '@/components/home/partners';
 import { CallToAction } from '@/components/home/cta';
 import { RecentlyViewed } from '@/components/property/recently-viewed';
+import { getFacets, getFeaturedProperties } from '@/services/property-service';
+import { listAgents } from '@/services/agent-service';
 
-export default function HomePage() {
+// Not ISR: this route has no dynamic params, so a Docker build (no DB
+// reachable at build time) would otherwise bake in an empty homepage and
+// serve it stale for the first `revalidate` window after every deploy. It's
+// a cheap query — render it fresh on every request instead.
+export const dynamic = 'force-dynamic';
+
+export default async function HomePage() {
+  const [featured, facets, agents] = await Promise.all([getFeaturedProperties(9), getFacets(), listAgents()]);
+
   return (
     <>
       <Hero />
       <Pillars />
-      <FeaturedProperties />
-      <PropertyTypes />
+      <FeaturedProperties properties={featured} />
+      <PropertyTypes byType={facets.byType} />
       <Stats />
       <VideoFeature />
-      <CitiesGrid />
-      <AgentsPreview />
+      <CitiesGrid byCity={facets.byCity} />
+      <AgentsPreview agents={agents.slice(0, 4)} />
       <Testimonials />
       <JournalPreview />
       <Partners />

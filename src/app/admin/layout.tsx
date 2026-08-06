@@ -1,11 +1,16 @@
 import type { Metadata } from 'next';
+import { getCurrentUser } from '@/lib/session';
+import { AdminShell } from '@/components/admin/admin-shell';
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
-// Real sidebar/topbar shell arrives with the rest of the admin UI. Auth
-// gating lives in proxy.ts (route-level) and requireAgentOrAdmin() (data
-// level, called per-page) — not here, since /admin/login also renders
-// through this layout and must stay reachable while logged out.
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-dvh bg-background">{children}</div>;
+// No auth check here — /admin/login renders through this same layout and
+// must stay reachable while logged out. Real gating is proxy.ts (routes)
+// and requireAgentOrAdmin() (data, called per-page). An absent user just
+// means "render children bare" (the login page supplies its own centered
+// card layout).
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
+  if (!user) return <>{children}</>;
+  return <AdminShell user={{ email: user.email ?? '', role: user.role }}>{children}</AdminShell>;
 }

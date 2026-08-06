@@ -3,6 +3,7 @@ node_modules
 out
 build
 .git
+uploads
 .env
 .env.local
 .env*.local

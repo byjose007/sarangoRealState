@@ -1,19 +1,21 @@
 import { notFound } from 'next/navigation';
-import { properties, propertyBySlug } from '@/data/properties';
-import { agentById } from '@/data/agents';
+import { getAllPropertySlugs, getPropertyBySlug, getSimilar } from '@/services/property-service';
+import { getAgentById } from '@/services/agent-service';
 import { cities } from '@/data/reference';
-import { getSimilar } from '@/services/property-service';
 import { buildMetadata, residenceJsonLd } from '@/lib/seo';
 import { siteConfig } from '@/constants/site';
 import { PropertyDetailView } from '@/components/property/property-detail-view';
 
+export const revalidate = 3600;
+
 export async function generateStaticParams() {
-  return properties.map((property) => ({ slug: property.slug }));
+  const slugs = await getAllPropertySlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const property = propertyBySlug(slug);
+  const property = await getPropertyBySlug(slug);
   if (!property) return buildMetadata({ title: 'Listing not found', path: '/properties' });
 
   return buildMetadata({
@@ -26,12 +28,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function PropertyDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const property = propertyBySlug(slug);
+  const property = await getPropertyBySlug(slug);
   if (!property) notFound();
 
-  const agent = agentById(property.agentId);
+  const [agent, similar] = await Promise.all([getAgentById(property.agentId), getSimilar(property, 3)]);
   const city = cities.find((item) => item.slug === property.citySlug);
-  const similar = getSimilar(property, 3);
 
   return (
     <>
@@ -52,7 +53,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<{
           ),
         }}
       />
-      <PropertyDetailView property={property} agent={agent} city={city} similar={similar} />
+      <PropertyDetailView property={property} agent={agent ?? undefined} city={city} similar={similar} />
     </>
   );
 }

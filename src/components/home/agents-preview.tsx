@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { agents } from '@/data/agents';
+import type { Agent } from '@/types';
 import { useTranslation } from '@/i18n/context';
 import { AgentCard } from '@/components/shared/agent-card';
 import { SectionHeading } from '@/components/shared/section-heading';
 import { buttonVariants } from '@/components/ui/button';
 import { Reveal } from '@/components/shared/reveal';
 
-export function AgentsPreview() {
+export function AgentsPreview({ agents }: { agents: Agent[] }) {
   const { t } = useTranslation();
 
   return (

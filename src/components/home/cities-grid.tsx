@@ -2,14 +2,12 @@
 
 import Link from 'next/link';
 import { cities } from '@/data/reference';
-import { getFacets } from '@/services/property-service';
 import { useTranslation } from '@/i18n/context';
 import { SmartImage } from '@/components/shared/smart-image';
 import { SectionHeading } from '@/components/shared/section-heading';
 import { Reveal } from '@/components/shared/reveal';
 
-export function CitiesGrid() {
-  const facets = getFacets();
+export function CitiesGrid({ byCity }: { byCity: Record<string, number> }) {
   const { t } = useTranslation();
 
   return (
@@ -40,7 +38,7 @@ export function CitiesGrid() {
                 <span className="absolute inset-x-4 bottom-4 text-background">
                   <span className="block font-display text-xl tracking-tight">{city.name}</span>
                   <span className="mt-1 block font-mono text-[0.62rem] uppercase tracking-[0.14em] text-background/75">
-                    {facets.byCity[city.slug] ?? 0} {t.home.listingsCount} · {city.state}
+                    {byCity[city.slug] ?? 0} {t.home.listingsCount} · {city.state}
                   </span>
                 </span>
               </Link>

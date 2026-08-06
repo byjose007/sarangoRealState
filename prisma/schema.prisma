@@ -231,7 +231,9 @@ model Client {
   id        String     @id @default(cuid())
   firstName String
   lastName  String
-  email     String
+  /// Unique so repeat inquiries from the same address dedupe onto one
+  /// Client via upsert instead of spawning a duplicate contact each time.
+  email     String     @unique
   phone     String?
   notes     String?    @db.Text
   source    LeadSource @default(MANUAL)
@@ -240,7 +242,6 @@ model Client {
 
   leads     Lead[]
 
-  @@index([email])
   @@map("clients")
 }
 

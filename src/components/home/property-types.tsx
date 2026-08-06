@@ -4,7 +4,6 @@ import * as React from 'react';
 import Link from 'next/link';
 import { ArrowUpRight } from 'lucide-react';
 import { getPropertyTypeOptions } from '@/constants/navigation';
-import { getFacets } from '@/services/property-service';
 import { unsplash } from '@/data/images';
 import { useTranslation } from '@/i18n/context';
 import { SmartImage } from '@/components/shared/smart-image';
@@ -12,10 +11,9 @@ import { SectionHeading } from '@/components/shared/section-heading';
 import { cn } from '@/lib/utils';
 
 /** Hovering a type swaps the plate — a catalogue index, not a card grid. */
-export function PropertyTypes() {
+export function PropertyTypes({ byType }: { byType: Record<string, number> }) {
   const [active, setActive] = React.useState(0);
   const { t } = useTranslation();
-  const facets = getFacets();
   const options = React.useMemo(() => getPropertyTypeOptions(t), [t]);
 
   return (
@@ -43,7 +41,7 @@ export function PropertyTypes() {
                 </span>
                 <span className="flex items-center gap-4">
                   <span className="font-mono text-[0.68rem] uppercase tracking-[0.14em] text-muted-foreground">
-                    {facets.byType[option.value] ?? 0} {t.home.listed}
+                    {byType[option.value] ?? 0} {t.home.listed}
                   </span>
                   <ArrowUpRight className="size-4 text-brass opacity-0 transition-opacity group-hover:opacity-100" />
                 </span>

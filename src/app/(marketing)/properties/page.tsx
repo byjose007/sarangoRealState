@@ -12,8 +12,14 @@ export const metadata = buildMetadata({
   path: '/properties',
 });
 
-export default function PropertiesPage() {
-  const facets = getFacets();
+// Not ISR — see src/app/(marketing)/page.tsx for why (no dynamic params to
+// gate a build-time-empty static shell, so render fresh every request).
+// The actual results grid is client-fetched anyway (PropertyExplorer); this
+// only affects the header's total count.
+export const dynamic = 'force-dynamic';
+
+export default async function PropertiesPage() {
+  const facets = await getFacets();
 
   return (
     <>

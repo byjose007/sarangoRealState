@@ -3,12 +3,12 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Scale, X } from 'lucide-react';
+import type { Property } from '@/types';
 import { useCollections } from '@/store/collections';
 import { useMounted } from '@/hooks/use-mounted';
 import { useTranslation } from '@/i18n/context';
-import { getPropertiesByIds } from '@/services/property-service';
+import { getAgentsByIdsAction, getPropertiesByIdsAction } from '@/actions/public-catalog';
 import { amenities } from '@/data/reference';
-import { agentById } from '@/data/agents';
 import { formatArea, formatListingPrice, formatNumber, formatPrice, getStatusLabel, getTypeLabel } from '@/lib/format';
 import { Breadcrumb } from '@/components/layout/breadcrumb';
 import { SmartImage } from '@/components/shared/smart-image';
@@ -22,9 +22,33 @@ export default function ComparePage() {
   const compare = useCollections((state) => state.compare);
   const toggleCompare = useCollections((state) => state.toggleCompare);
   const clearCompare = useCollections((state) => state.clearCompare);
-  const items = getPropertiesByIds(compare);
+  const compareKey = compare.join(',');
+  const [items, setItems] = React.useState<Property[]>([]);
+  const [agentNames, setAgentNames] = React.useState<Record<string, string>>({});
+  const [loaded, setLoaded] = React.useState(false);
 
-  const rows: [string, (id: number) => string][] = React.useMemo(
+  React.useEffect(() => {
+    if (!compare.length) {
+      setItems([]);
+      setLoaded(true);
+      return;
+    }
+    let active = true;
+    getPropertiesByIdsAction(compare).then(async (result) => {
+      if (!active) return;
+      setItems(result);
+      setLoaded(true);
+      const agentIds = Array.from(new Set(result.map((property) => property.agentId)));
+      const agents = await getAgentsByIdsAction(agentIds);
+      if (active) setAgentNames(Object.fromEntries(agents.map((agent) => [agent.id, agent.name])));
+    });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compareKey]);
+
+  const rows: [string, (index: number) => string][] = React.useMemo(
     () => [
       [t.property.price, (index) => formatListingPrice(items[index]!.price, items[index]!.pricePeriod, language)],
       [isEs ? 'Precio por m²' : 'Price per sq ft', (index) => formatPrice(Math.round(items[index]!.price / Math.max(items[index]!.area, 1)))],
@@ -40,13 +64,13 @@ export default function ComparePage() {
       [t.propertyDetail.propertyTax, (index) => (items[index]!.propertyTax ? formatPrice(items[index]!.propertyTax) : '—')],
       [t.propertyDetail.hoaFee, (index) => (items[index]!.hoaFee ? formatPrice(items[index]!.hoaFee) : (isEs ? 'Ninguna' : 'None'))],
       [t.propertyDetail.viewsThisMonth, (index) => formatNumber(items[index]!.views)],
-      [isEs ? 'Agente' : 'Agent', (index) => agentById(items[index]!.agentId)?.name ?? '—'],
+      [isEs ? 'Agente' : 'Agent', (index) => agentNames[items[index]!.agentId] ?? '—'],
       [
         t.propertyDetail.amenitiesTab,
         (index) => `${items[index]!.amenityIds.length} ${isEs ? 'de' : 'of'} ${amenities.length}`,
       ],
     ],
-    [t, language, isEs, items],
+    [t, language, isEs, items, agentNames],
   );
 
   return (
@@ -67,7 +91,7 @@ export default function ComparePage() {
       </div>
 
       <div className="mt-10">
-        {!mounted ? (
+        {!mounted || !loaded ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 3 }).map((_, index) => (
               <PropertyCardSkeleton key={index} />

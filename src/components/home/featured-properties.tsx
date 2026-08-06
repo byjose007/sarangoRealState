@@ -2,16 +2,16 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { featuredProperties } from '@/data/properties';
+import type { Property } from '@/types';
 import { Carousel } from '@/components/ui/carousel';
 import { PropertyCard } from '@/components/property/property-card';
 import { SectionHeading } from '@/components/shared/section-heading';
 import { buttonVariants } from '@/components/ui/button';
 import { useTranslation } from '@/i18n/context';
 
-export function FeaturedProperties() {
+export function FeaturedProperties({ properties }: { properties: Property[] }) {
   const { t, isEs } = useTranslation();
-  const items = featuredProperties.slice(0, 9);
+  const items = properties.slice(0, 9);
 
   return (
     <section className="bg-surface py-20 lg:py-28">

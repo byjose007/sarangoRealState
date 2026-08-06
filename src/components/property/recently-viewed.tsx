@@ -2,10 +2,11 @@
 
 import * as React from 'react';
 import Link from 'next/link';
+import type { Property } from '@/types';
 import { useCollections } from '@/store/collections';
 import { useMounted } from '@/hooks/use-mounted';
 import { useTranslation } from '@/i18n/context';
-import { getPropertiesByIds } from '@/services/property-service';
+import { getPropertiesByIdsAction } from '@/actions/public-catalog';
 import { formatListingPrice } from '@/lib/format';
 import { SmartImage } from '@/components/shared/smart-image';
 
@@ -22,7 +23,24 @@ export function RecentlyViewed({ exclude }: { exclude?: string }) {
   const mounted = useMounted();
   const { language, t } = useTranslation();
   const recent = useCollections((state) => state.recent);
-  const items = getPropertiesByIds(recent.filter((id) => id !== exclude)).slice(0, 4);
+  const ids = recent.filter((id) => id !== exclude);
+  const idsKey = ids.join(',');
+  const [items, setItems] = React.useState<Property[]>([]);
+
+  React.useEffect(() => {
+    if (!ids.length) {
+      setItems([]);
+      return;
+    }
+    let active = true;
+    getPropertiesByIdsAction(ids).then((result) => {
+      if (active) setItems(result.slice(0, 4));
+    });
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idsKey]);
 
   if (!mounted || items.length < 2) return null;
 

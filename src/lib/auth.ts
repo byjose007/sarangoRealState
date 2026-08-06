@@ -1,7 +1,20 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
+import type { JWT } from 'next-auth/jwt';
 import { prisma } from '@/lib/prisma';
+import type { UserRole } from '@/generated/prisma/enums';
+
+/**
+ * `next-auth/jwt`'s JWT type is re-exported (`export *`) from
+ * `@auth/core/jwt`, a transitive dependency npm sometimes hoists to
+ * top-level and sometimes nests under node_modules/next-auth depending on
+ * what else is installed. Ambient `declare module '@auth/core/jwt'`
+ * augmentation only merges when that physical module resolves from this
+ * file's own node_modules lookup — which breaks silently across installs
+ * when hoisting shifts. An explicit local type + casts sidesteps that.
+ */
+type AppJWT = JWT & { role: UserRole; agentId: string | null };
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: 'jwt' },
@@ -39,16 +52,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     jwt({ token, user }) {
+      const appToken = token as AppJWT;
       if (user) {
-        token.role = user.role;
-        token.agentId = user.agentId;
+        appToken.role = user.role;
+        appToken.agentId = user.agentId;
       }
-      return token;
+      return appToken;
     },
     session({ session, token }) {
-      session.user.id = token.sub!;
-      session.user.role = token.role;
-      session.user.agentId = token.agentId;
+      const appToken = token as AppJWT;
+      session.user.id = appToken.sub!;
+      session.user.role = appToken.role;
+      session.user.agentId = appToken.agentId;
       return session;
     },
   },

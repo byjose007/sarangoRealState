@@ -1,10 +1,11 @@
 'use client';
 
+import * as React from 'react';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import type { Agent, Property } from '@/types';
 import { useUi } from '@/store/ui-store';
-import { propertyById } from '@/data/properties';
-import { agentById } from '@/data/agents';
+import { getAgentByIdAction, getPropertyByIdAction } from '@/actions/public-catalog';
 import { formatListingPrice, getStatusLabel, getTypeLabel } from '@/lib/format';
 import { useTranslation } from '@/i18n/context';
 import { Modal } from '@/components/ui/modal';
@@ -20,8 +21,25 @@ export function QuickViewHost() {
   const id = useUi((state) => state.quickViewId);
   const close = useUi((state) => state.closeQuickView);
   const { language, t, isEs } = useTranslation();
-  const property = id ? propertyById(id) : undefined;
-  const agent = property ? agentById(property.agentId) : undefined;
+  const [property, setProperty] = React.useState<Property | null>(null);
+  const [agent, setAgent] = React.useState<Agent | null>(null);
+
+  React.useEffect(() => {
+    if (!id) {
+      setProperty(null);
+      setAgent(null);
+      return;
+    }
+    let active = true;
+    getPropertyByIdAction(id).then((result) => {
+      if (!active) return;
+      setProperty(result);
+      if (result) getAgentByIdAction(result.agentId).then((a) => active && setAgent(a));
+    });
+    return () => {
+      active = false;
+    };
+  }, [id]);
 
   return (
     <Modal open={Boolean(property)} onClose={close} className="max-w-3xl p-0" variant="card">

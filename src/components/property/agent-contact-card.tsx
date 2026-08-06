@@ -40,7 +40,7 @@ export function AgentContactCard({ agent, subject }: { agent: Agent; subject?: s
 
   const onSubmit = async (values: AgentMessageInput) => {
     setPending(true);
-    const result = await messageAgent(values);
+    const result = await messageAgent(values, agent.id);
     setPending(false);
     if (!result.ok) {
       toast.error(result.message);
