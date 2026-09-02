@@ -34,14 +34,16 @@ export function Hero() {
               transition={{ duration: 0.6 }}
               className="eyebrow"
             >
-              {isEs ? 'Inmobiliaria de precisión · est. 2009' : 'Survey-first brokerage · est. 2009'}
+              {isEs
+                ? 'Inmobiliaria de precisión · est. 2009'
+                : 'Survey-first brokerage · est. 2009'}
             </motion.span>
 
             <motion.h1
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-6 text-display balance"
+              className="balance mt-6 text-display"
             >
               {t.hero.titleLine1}
               <span className="block italic text-primary">{t.hero.titleLine2}</span>
@@ -51,7 +53,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.16 }}
-              className="mt-6 max-w-lg text-muted-foreground balance"
+              className="balance mt-6 max-w-lg text-muted-foreground"
             >
               {t.hero.subtitle}
             </motion.p>
@@ -119,7 +121,7 @@ export function Hero() {
             </span>
 
             <span className="absolute left-5 top-5 rounded-full bg-background/90 px-3 py-1.5 font-mono text-[0.62rem] uppercase tracking-[0.14em]">
-              VS-014-TX · Austin
+              VS-001-AZUAY · Cuenca
             </span>
           </motion.div>
         </div>

@@ -11,106 +11,122 @@ export const cities: City[] = [
     image: unsplash(2, 900, 1100),
     coordinates: { lat: -2.9001, lng: -79.0059 },
     blurb: 'Centro histórico colonial, exclusivas residencias y desarrollos de alta calidad.',
+    blurbEn: 'Colonial old town, exclusive residences and high-quality developments.',
   },
   {
-    id: 'c1',
-    slug: 'austin',
-    name: 'Austin',
-    state: 'TX',
-    country: 'USA',
-    image: unsplash(1, 900, 1100),
-    coordinates: { lat: 30.2672, lng: -97.7431 },
-    blurb: 'Hill-country lots, deep porches and a build market that rewards early buyers.',
+    id: 'c-quito',
+    slug: 'quito',
+    name: 'Quito',
+    state: 'Pichincha',
+    country: 'Ecuador',
+    image: unsplash(4, 900, 1100),
+    coordinates: { lat: -0.1807, lng: -78.4678 },
+    blurb:
+      'Capital andina con barrios patrimoniales y proyectos residenciales en plena expansión al norte.',
+    blurbEn:
+      'Andean capital with heritage neighbourhoods and residential projects expanding to the north.',
   },
   {
-    id: 'c2',
-    slug: 'miami',
-    name: 'Miami',
-    state: 'FL',
-    country: 'USA',
-    image: unsplash(3, 900, 1100),
-    coordinates: { lat: 25.7617, lng: -80.1918 },
-    blurb: 'Waterfront towers and design-district lofts, priced by the view line.',
+    id: 'c-guayaquil',
+    slug: 'guayaquil',
+    name: 'Guayaquil',
+    state: 'Guayas',
+    country: 'Ecuador',
+    image: unsplash(6, 900, 1100),
+    coordinates: { lat: -2.1894, lng: -79.8891 },
+    blurb:
+      'Principal puerto y motor económico del país, con torres frente al Malecón y nuevos desarrollos en Vía a la Costa.',
+    blurbEn:
+      "Ecuador's main port and economic engine, with towers along the Malecón and new developments on Vía a la Costa.",
   },
   {
-    id: 'c3',
-    slug: 'seattle',
-    name: 'Seattle',
-    state: 'WA',
-    country: 'USA',
-    image: unsplash(5, 900, 1100),
-    coordinates: { lat: 47.6062, lng: -122.3321 },
-    blurb: 'Cedar-clad craftsman stock with the tightest inventory on the west coast.',
+    id: 'c-samborondon',
+    slug: 'samborondon',
+    name: 'Samborondón',
+    state: 'Guayas',
+    country: 'Ecuador',
+    image: unsplash(8, 900, 1100),
+    coordinates: { lat: -1.9667, lng: -79.7333 },
+    blurb:
+      'Urbanizaciones cerradas y residencias de alto nivel junto a Guayaquil, referente del segmento premium.',
+    blurbEn:
+      'Gated communities and high-end residences next to Guayaquil, the benchmark for the premium segment.',
   },
   {
-    id: 'c4',
-    slug: 'denver',
-    name: 'Denver',
-    state: 'CO',
-    country: 'USA',
-    image: unsplash(7, 900, 1100),
-    coordinates: { lat: 39.7392, lng: -104.9903 },
-    blurb: 'Front-range light, generous ceilings and a rental yield that still works.',
+    id: 'c-manta',
+    slug: 'manta',
+    name: 'Manta',
+    state: 'Manabí',
+    country: 'Ecuador',
+    image: unsplash(10, 900, 1100),
+    coordinates: { lat: -0.9677, lng: -80.7089 },
+    blurb:
+      'Costa del Pacífico con proyectos frente al mar y una demanda creciente de segunda vivienda.',
+    blurbEn: 'Pacific coastline with beachfront projects and growing demand for second homes.',
   },
   {
-    id: 'c5',
-    slug: 'san-diego',
-    name: 'San Diego',
-    state: 'CA',
-    country: 'USA',
-    image: unsplash(9, 900, 1100),
-    coordinates: { lat: 32.7157, lng: -117.1611 },
-    blurb: 'Canyon plots and mid-century bones, ten minutes from open water.',
+    id: 'c-salinas',
+    slug: 'salinas',
+    name: 'Salinas',
+    state: 'Santa Elena',
+    country: 'Ecuador',
+    image: unsplash(12, 900, 1100),
+    coordinates: { lat: -2.2038, lng: -80.9584 },
+    blurb:
+      'Balneario y destino de segunda residencia, con condominios frente a la playa muy cotizados.',
+    blurbEn: 'Beach resort and second-home destination, with sought-after beachfront condominiums.',
   },
   {
-    id: 'c6',
-    slug: 'nashville',
-    name: 'Nashville',
-    state: 'TN',
-    country: 'USA',
-    image: unsplash(11, 900, 1100),
-    coordinates: { lat: 36.1627, lng: -86.7816 },
-    blurb: 'New-build townhouses inside the loop, walkable to every stage in town.',
+    id: 'c-ambato',
+    slug: 'ambato',
+    name: 'Ambato',
+    state: 'Tungurahua',
+    country: 'Ecuador',
+    image: unsplash(14, 900, 1100),
+    coordinates: { lat: -1.2543, lng: -78.6229 },
+    blurb:
+      'Centro comercial de la sierra centro, con barrios residenciales consolidados y buena plusvalía.',
+    blurbEn:
+      'Commercial hub of the central highlands, with established residential neighbourhoods and solid appreciation.',
   },
   {
-    id: 'c7',
-    slug: 'portland',
-    name: 'Portland',
-    state: 'OR',
-    country: 'USA',
-    image: unsplash(13, 900, 1100),
-    coordinates: { lat: 45.5152, lng: -122.6784 },
-    blurb: 'Tree-lined blocks, timber renovations and the best garden lots we survey.',
+    id: 'c-ibarra',
+    slug: 'ibarra',
+    name: 'Ibarra',
+    state: 'Imbabura',
+    country: 'Ecuador',
+    image: unsplash(16, 900, 1100),
+    coordinates: { lat: 0.3517, lng: -78.1223 },
+    blurb:
+      'La ciudad blanca del norte, con propiedades coloniales y desarrollos familiares en expansión.',
+    blurbEn:
+      'The White City of the north, with colonial properties and growing family developments.',
   },
   {
-    id: 'c8',
-    slug: 'charleston',
-    name: 'Charleston',
-    state: 'SC',
-    country: 'USA',
-    image: unsplash(15, 900, 1100),
-    coordinates: { lat: 32.7765, lng: -79.9311 },
-    blurb: 'Single houses with side piazzas — restored, documented, rarely listed twice.',
+    id: 'c-riobamba',
+    slug: 'riobamba',
+    name: 'Riobamba',
+    state: 'Chimborazo',
+    country: 'Ecuador',
+    image: unsplash(18, 900, 1100),
+    coordinates: { lat: -1.6636, lng: -78.6546 },
+    blurb:
+      'Corazón de la sierra central, con vistas al Chimborazo y un mercado residencial accesible.',
+    blurbEn:
+      'Heart of the central highlands, with views of Chimborazo and an accessible residential market.',
   },
   {
-    id: 'c9',
-    slug: 'scottsdale',
-    name: 'Scottsdale',
-    state: 'AZ',
-    country: 'USA',
-    image: unsplash(17, 900, 1100),
-    coordinates: { lat: 33.4942, lng: -111.9261 },
-    blurb: 'Desert-modern estates where shade planning matters more than square footage.',
-  },
-  {
-    id: 'c10',
-    slug: 'boston',
-    name: 'Boston',
-    state: 'MA',
-    country: 'USA',
-    image: unsplash(19, 900, 1100),
-    coordinates: { lat: 42.3601, lng: -71.0589 },
-    blurb: 'Brownstone floors and harbour penthouses, measured room by room.',
+    id: 'c-loja',
+    slug: 'loja',
+    name: 'Loja',
+    state: 'Loja',
+    country: 'Ecuador',
+    image: unsplash(20, 900, 1100),
+    coordinates: { lat: -3.9931, lng: -79.2042 },
+    blurb:
+      'Ciudad universitaria y cultural del sur, con un mercado residencial estable y en crecimiento sostenido.',
+    blurbEn:
+      'University and cultural city in the south, with a stable, steadily growing residential market.',
   },
 ];
 
@@ -179,7 +195,7 @@ export const testimonialsEs: Testimonial[] = [
   {
     id: 't1',
     name: 'Jessica Moreau',
-    location: 'Austin, TX',
+    location: 'Quito, Pichincha',
     avatar: avatar(9),
     quote:
       'Midieron la parcela con cinta métrica e higrómetro antes de mostrarnos el precio. La auditoría detectó un problema de drenaje que el vendedor subsanó antes del cierre.',
@@ -189,7 +205,7 @@ export const testimonialsEs: Testimonial[] = [
   {
     id: 't2',
     name: 'Michael Tran',
-    location: 'Seattle, WA',
+    location: 'Guayaquil, Guayas',
     avatar: avatar(12),
     quote:
       'Tres ofertas en once días, y nuestra asesora nos aconsejó rechazar la más alta. Tuvo toda la razón respecto al riesgo de financiación.',
@@ -199,7 +215,7 @@ export const testimonialsEs: Testimonial[] = [
   {
     id: 't3',
     name: 'Sarah Lindqvist',
-    location: 'Miami, FL',
+    location: 'Manta, Manabí',
     avatar: avatar(23),
     quote:
       'Los planos y el dossier documental estaban listos antes de la primera visita. Comparé cuatro áticos en una sola tarde.',
@@ -209,7 +225,7 @@ export const testimonialsEs: Testimonial[] = [
   {
     id: 't4',
     name: 'Daniel Okafor',
-    location: 'Denver, CO',
+    location: 'Samborondón, Guayas',
     avatar: avatar(33),
     quote:
       'Alquilo dos viviendas a través de Vestra. Las liquidaciones llegan puntuales el día 2 de cada mes y el tiempo de desocupación ha sido inferior a una semana.',
@@ -219,7 +235,7 @@ export const testimonialsEs: Testimonial[] = [
   {
     id: 't5',
     name: 'Amelia Ruiz',
-    location: 'Charleston, SC',
+    location: 'Cuenca, Azuay',
     avatar: avatar(45),
     quote:
       'Nos trasladábamos desde el extranjero y lo visitamos todo por vídeo. Nada de la casa nos sorprendió cuando aterrizamos.',
@@ -229,7 +245,7 @@ export const testimonialsEs: Testimonial[] = [
   {
     id: 't6',
     name: 'Owen Whitfield',
-    location: 'Portland, OR',
+    location: 'Ibarra, Imbabura',
     avatar: avatar(51),
     quote:
       'Respuestas transparentes sobre lo que realmente costaría la reforma. Eso es mucho más raro de lo que debería.',
@@ -242,7 +258,7 @@ export const testimonialsEn: Testimonial[] = [
   {
     id: 't1',
     name: 'Jessica Moreau',
-    location: 'Austin, TX',
+    location: 'Quito, Pichincha',
     avatar: avatar(9),
     quote:
       'They walked the lot with a tape measure and a moisture meter before we ever saw a price. The survey caught a drainage issue the seller fixed at closing.',
@@ -252,7 +268,7 @@ export const testimonialsEn: Testimonial[] = [
   {
     id: 't2',
     name: 'Michael Tran',
-    location: 'Seattle, WA',
+    location: 'Guayaquil, Guayas',
     avatar: avatar(12),
     quote:
       'Three offers in eleven days, and our agent talked us out of the highest one. She was right about the financing risk.',
@@ -262,7 +278,7 @@ export const testimonialsEn: Testimonial[] = [
   {
     id: 't3',
     name: 'Sarah Lindqvist',
-    location: 'Miami, FL',
+    location: 'Manta, Manabí',
     avatar: avatar(23),
     quote:
       'The floor plans and the documents pack were ready before the first viewing. I compared four penthouses in one afternoon.',
@@ -272,7 +288,7 @@ export const testimonialsEn: Testimonial[] = [
   {
     id: 't4',
     name: 'Daniel Okafor',
-    location: 'Denver, CO',
+    location: 'Samborondón, Guayas',
     avatar: avatar(33),
     quote:
       'I rent out two units through Vestra. Statements arrive on the second of the month and the vacancy gap has been under a week.',
@@ -282,7 +298,7 @@ export const testimonialsEn: Testimonial[] = [
   {
     id: 't5',
     name: 'Amelia Ruiz',
-    location: 'Charleston, SC',
+    location: 'Cuenca, Azuay',
     avatar: avatar(45),
     quote:
       'We were relocating from abroad and toured everything on video. Nothing about the house surprised us when we landed.',
@@ -292,7 +308,7 @@ export const testimonialsEn: Testimonial[] = [
   {
     id: 't6',
     name: 'Owen Whitfield',
-    location: 'Portland, OR',
+    location: 'Ibarra, Imbabura',
     avatar: avatar(51),
     quote:
       'Straight answers about what the renovation would actually cost. That is rarer than it should be.',
@@ -365,7 +381,7 @@ export const faqsEn = [
   {
     question: 'How fast can I schedule a viewing?',
     answer:
-      'Pick a slot on any listing page and you get a confirmation within two business hours. Same-day viewings are usually possible in Austin, Denver and Nashville.',
+      'Pick a slot on any listing page and you get a confirmation within two business hours. Same-day viewings are usually possible at our offices.',
   },
   {
     question: 'Can I buy from abroad?',
@@ -392,9 +408,20 @@ export const faqs = faqsEs;
 
 export const companyStatsEs = [
   { value: 4200, suffix: '+', label: 'Viviendas auditadas', detail: 'desde 2009' },
-  { value: 1.8, suffix: 'B', prefix: '$', label: 'Volumen transaccionado', detail: 'últimos 5 años' },
+  {
+    value: 1.8,
+    suffix: 'B',
+    prefix: '$',
+    label: 'Volumen transaccionado',
+    detail: 'últimos 5 años',
+  },
   { value: 24, suffix: '', label: 'Días en mercado', detail: 'mediana, 2025' },
-  { value: 98, suffix: '%', label: 'Fidelización de clientes', detail: 'repetición o recomendación' },
+  {
+    value: 98,
+    suffix: '%',
+    label: 'Fidelización de clientes',
+    detail: 'repetición o recomendación',
+  },
 ];
 
 export const companyStatsEn = [

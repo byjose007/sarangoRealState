@@ -5,13 +5,7 @@
 export type ListingStatus = 'for-sale' | 'for-rent' | 'sold' | 'new-development';
 
 export type PropertyType =
-  | 'villa'
-  | 'apartment'
-  | 'townhouse'
-  | 'penthouse'
-  | 'loft'
-  | 'estate'
-  | 'office';
+  'villa' | 'apartment' | 'townhouse' | 'penthouse' | 'loft' | 'estate' | 'office';
 
 export interface Coordinates {
   lat: number;
@@ -27,6 +21,7 @@ export interface City {
   image: string;
   coordinates: Coordinates;
   blurb: string;
+  blurbEn: string;
 }
 
 export interface Amenity {
@@ -142,12 +137,7 @@ export interface Testimonial {
 }
 
 export type SortKey =
-  | 'newest'
-  | 'price-asc'
-  | 'price-desc'
-  | 'area-desc'
-  | 'bedrooms-desc'
-  | 'popular';
+  'newest' | 'price-asc' | 'price-desc' | 'area-desc' | 'bedrooms-desc' | 'popular';
 
 export type ViewMode = 'grid' | 'list' | 'map';
 

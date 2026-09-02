@@ -2,11 +2,13 @@
 
 import * as React from 'react';
 import type { FloorPlan } from '@/types';
-import { formatNumber } from '@/lib/format';
+import { formatArea } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/i18n/context';
 
 /** Plans are drawn as inline SVG — no image assets, sharp at any zoom. */
 export function FloorPlans({ plans }: { plans: FloorPlan[] }) {
+  const { isEs } = useTranslation();
   const [active, setActive] = React.useState(0);
   const plan = plans[active];
   if (!plan) return null;
@@ -26,14 +28,20 @@ export function FloorPlans({ plans }: { plans: FloorPlan[] }) {
           >
             <p className="font-display text-base">{item.name}</p>
             <p className="mt-1 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted-foreground">
-              {formatNumber(item.area)} sq ft · {item.bedrooms} bd · {item.bathrooms} ba
+              {formatArea(item.area, isEs ? 'es' : 'en')} · {item.bedrooms} {isEs ? 'hab' : 'bd'} ·{' '}
+              {item.bathrooms} {isEs ? 'baños' : 'ba'}
             </p>
           </button>
         ))}
       </div>
 
       <div className="rounded-lg border border-border bg-surface p-4">
-        <svg viewBox="0 0 320 220" className="h-auto w-full" role="img" aria-label={`${plan.name} floor plan`}>
+        <svg
+          viewBox="0 0 320 220"
+          className="h-auto w-full"
+          role="img"
+          aria-label={`${plan.name} — ${isEs ? 'plano' : 'floor plan'}`}
+        >
           <defs>
             <pattern id="plan-grid" width="16" height="16" patternUnits="userSpaceOnUse">
               <path d="M16 0H0v16" fill="none" stroke="hsl(var(--border))" strokeWidth="0.5" />
@@ -63,7 +71,7 @@ export function FloorPlans({ plans }: { plans: FloorPlan[] }) {
           ))}
           <line x1="20" y1="210" x2="300" y2="210" stroke="hsl(var(--brass))" strokeWidth="1" />
           <text x="150" y="206" fontSize="8" fontFamily="var(--font-mono)" fill="hsl(var(--brass))">
-            {formatNumber(plan.area)} SQ FT
+            {formatArea(plan.area, isEs ? 'es' : 'en').toUpperCase()}
           </text>
         </svg>
       </div>

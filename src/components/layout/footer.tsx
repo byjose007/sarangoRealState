@@ -17,7 +17,7 @@ const socials = [
 ];
 
 export function Footer() {
-  const { t, isEs } = useTranslation();
+  const { t } = useTranslation();
   const footerColumns = React.useMemo(() => getFooterNav(t), [t]);
 
   return (
@@ -27,9 +27,7 @@ export function Footer() {
           <div>
             <Logo size="lg" className="text-background" />
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-background/70">
-              {isEs
-                ? 'Vestra es una agencia inmobiliaria boutique. Cada propiedad se mide, dibuja y documenta antes de llegar al mercado para que compres con certezas.'
-                : siteConfig.description}
+              {t.footer.description}
             </p>
             <div className="mt-8">
               <p className="font-mono text-eyebrow uppercase text-background/50">
@@ -44,7 +42,9 @@ export function Footer() {
           <div className="grid gap-10 sm:grid-cols-3">
             {footerColumns.map((column) => (
               <div key={column.title}>
-                <p className="font-mono text-eyebrow uppercase text-background/50">{column.title}</p>
+                <p className="font-mono text-eyebrow uppercase text-background/50">
+                  {column.title}
+                </p>
                 <ul className="mt-5 space-y-3">
                   {column.links.map((link) => (
                     <li key={link.label}>
@@ -114,7 +114,7 @@ export function Footer() {
       <div className="border-t border-background/15">
         <div className="container flex flex-col items-center justify-between gap-3 py-5 text-xs text-background/50 sm:flex-row">
           <p>
-            © {new Date().getFullYear()} {siteConfig.legalName}. {t.footer.demoNotice}
+            © {new Date().getFullYear()} {siteConfig.legalName}. {t.footer.rightsReserved}
           </p>
           <div className="flex gap-6">
             <Link href="/about" className="hover:text-background">

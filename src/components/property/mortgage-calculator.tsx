@@ -6,6 +6,7 @@ import { calculateMortgage } from '@/lib/mortgage';
 import { formatMoney, formatPrice } from '@/lib/format';
 import { Input, Label } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/i18n/context';
 
 interface CalculatorProps {
   price: number;
@@ -14,7 +15,13 @@ interface CalculatorProps {
   className?: string;
 }
 
-export function MortgageCalculator({ price, propertyTax = 0, hoa = 0, className }: CalculatorProps) {
+export function MortgageCalculator({
+  price,
+  propertyTax = 0,
+  hoa = 0,
+  className,
+}: CalculatorProps) {
+  const { t } = useTranslation();
   const [downPct, setDownPct] = React.useState(20);
   const [years, setYears] = React.useState(30);
   const [rate, setRate] = React.useState(6.4);
@@ -36,10 +43,10 @@ export function MortgageCalculator({ price, propertyTax = 0, hoa = 0, className 
   );
 
   const rows = [
-    ['Principal & interest', result.principalAndInterest],
-    ['Property tax', result.monthlyTax],
-    ['Insurance', result.monthlyInsurance],
-    ['HOA', result.monthlyHoa],
+    [t.mortgage.principalAndInterest, result.principalAndInterest],
+    [t.mortgage.propertyTax, result.monthlyTax],
+    [t.mortgage.insurance, result.monthlyInsurance],
+    [t.mortgage.hoa, result.monthlyHoa],
   ] as const;
 
   return (
@@ -47,7 +54,9 @@ export function MortgageCalculator({ price, propertyTax = 0, hoa = 0, className 
       <div className="grid lg:grid-cols-[1fr_1.1fr]">
         <div className="space-y-5 border-b border-border p-6 lg:border-b-0 lg:border-r">
           <div>
-            <Label htmlFor="down">Down payment · {downPct}%</Label>
+            <Label htmlFor="down">
+              {t.mortgage.downPayment} · {downPct}%
+            </Label>
             <input
               id="down"
               type="range"
@@ -63,7 +72,7 @@ export function MortgageCalculator({ price, propertyTax = 0, hoa = 0, className 
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="term">Term (years)</Label>
+              <Label htmlFor="term">{t.mortgage.term}</Label>
               <Input
                 id="term"
                 type="number"
@@ -74,7 +83,7 @@ export function MortgageCalculator({ price, propertyTax = 0, hoa = 0, className 
               />
             </div>
             <div>
-              <Label htmlFor="rate">Interest rate %</Label>
+              <Label htmlFor="rate">{t.mortgage.interestRate}</Label>
               <Input
                 id="rate"
                 type="number"
@@ -86,7 +95,7 @@ export function MortgageCalculator({ price, propertyTax = 0, hoa = 0, className 
               />
             </div>
             <div>
-              <Label htmlFor="insurance">Insurance / year</Label>
+              <Label htmlFor="insurance">{t.mortgage.insuranceYear}</Label>
               <Input
                 id="insurance"
                 type="number"
@@ -96,14 +105,21 @@ export function MortgageCalculator({ price, propertyTax = 0, hoa = 0, className 
               />
             </div>
             <div>
-              <Label htmlFor="loan">Loan amount</Label>
-              <Input id="loan" readOnly value={formatPrice(result.loanAmount)} className="bg-muted" />
+              <Label htmlFor="loan">{t.mortgage.loanAmount}</Label>
+              <Input
+                id="loan"
+                readOnly
+                value={formatPrice(result.loanAmount)}
+                className="bg-muted"
+              />
             </div>
           </div>
         </div>
 
         <div className="p-6">
-          <p className="font-mono text-eyebrow uppercase text-muted-foreground">Estimated monthly</p>
+          <p className="font-mono text-eyebrow uppercase text-muted-foreground">
+            {t.mortgage.estimatedMonthly}
+          </p>
           <p className="mt-2 font-display text-4xl tracking-tight">
             {formatMoney(result.monthlyTotal)}
           </p>
@@ -118,8 +134,8 @@ export function MortgageCalculator({ price, propertyTax = 0, hoa = 0, className 
           </ul>
 
           <p className="mt-4 text-xs text-muted-foreground">
-            Total interest over {years} years: {formatPrice(result.totalInterest)}. Figures are an
-            estimate, not a lending offer.
+            {t.mortgage.totalInterestOver} {years} {t.mortgage.years}:{' '}
+            {formatPrice(result.totalInterest)}. {t.mortgage.estimateDisclaimer}
           </p>
 
           <div className="mt-5 h-36">
@@ -145,8 +161,8 @@ export function MortgageCalculator({ price, propertyTax = 0, hoa = 0, className 
                     background: 'hsl(var(--surface))',
                     fontSize: 12,
                   }}
-                  formatter={(value: number) => [formatPrice(value), 'Balance']}
-                  labelFormatter={(label) => `Year ${label}`}
+                  formatter={(value: number) => [formatPrice(value), t.mortgage.balance]}
+                  labelFormatter={(label) => `${t.mortgage.year} ${label}`}
                 />
                 <Area
                   type="monotone"

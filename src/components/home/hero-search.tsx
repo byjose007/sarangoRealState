@@ -141,7 +141,7 @@ export function HeroSearch({ className }: { className?: string }) {
             <Label htmlFor="hero-q">{isEs ? 'Palabra clave o ref' : 'Keyword or reference'}</Label>
             <Input
               id="hero-q"
-              placeholder="VS-014-TX"
+              placeholder="VS-001-AZUAY"
               value={q}
               onChange={(event) => setQ(event.target.value)}
             />

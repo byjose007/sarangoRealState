@@ -6,6 +6,7 @@ import type { MapPoint } from '@/lib/map';
 import type { Coordinates } from '@/types';
 import { formatListingPrice } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/i18n/context';
 
 interface OpenStreetMapProps {
   points: MapPoint[];
@@ -20,6 +21,7 @@ export default function OpenStreetMap({
   className,
   zoom = 13,
 }: OpenStreetMapProps) {
+  const { t } = useTranslation();
   const mapRef = React.useRef<HTMLDivElement | null>(null);
   const leafletMapRef = React.useRef<L.Map | null>(null);
 
@@ -66,7 +68,8 @@ export default function OpenStreetMap({
       const { lat, lng } = point.coordinates;
       bounds.extend([lat, lng]);
 
-      const priceText = point.price > 0 ? formatListingPrice(point.price, point.period) : point.label;
+      const priceText =
+        point.price > 0 ? formatListingPrice(point.price, point.period) : point.label;
 
       // Custom badge HTML marker
       const customIcon = L.divIcon({
@@ -94,15 +97,17 @@ export default function OpenStreetMap({
           }
           ${
             point.slug && point.slug !== 'contact'
-              ? `<a href="/properties/${point.slug}" class="mt-2.5 inline-block rounded bg-primary px-3 py-1 font-mono text-[0.65rem] uppercase tracking-wider text-primary-foreground transition-opacity hover:opacity-90">Ver propiedad</a>`
+              ? `<a href="/properties/${point.slug}" class="mt-2.5 inline-block rounded bg-primary px-3 py-1 font-mono text-[0.65rem] uppercase tracking-wider text-primary-foreground transition-opacity hover:opacity-90">${t.common.viewProperty}</a>`
               : ''
           }
         </div>
       `;
 
-      L.marker([lat, lng], { icon: customIcon }).addTo(map).bindPopup(popupContent, {
-        offset: L.point(0, -10),
-      });
+      L.marker([lat, lng], { icon: customIcon })
+        .addTo(map)
+        .bindPopup(popupContent, {
+          offset: L.point(0, -10),
+        });
     });
 
     // Auto fit bounds if multiple points are provided
@@ -111,7 +116,7 @@ export default function OpenStreetMap({
     } else if (points.length === 1) {
       map.setView([points[0].coordinates.lat, points[0].coordinates.lng], 15);
     }
-  }, [points, center, zoom]);
+  }, [points, center, zoom, t]);
 
   // Clean up map instance on unmount
   React.useEffect(() => {

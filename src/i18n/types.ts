@@ -37,6 +37,7 @@ export interface TranslationDictionary {
     closeMenu: string;
   };
   footer: {
+    description: string;
     marketNotes: string;
     browse: string;
     company: string;
@@ -47,7 +48,7 @@ export interface TranslationDictionary {
     mortgageCalculator: string;
     buyerGuide: string;
     investmentDesk: string;
-    demoNotice: string;
+    rightsReserved: string;
     privacy: string;
     terms: string;
     careers: string;
@@ -230,6 +231,23 @@ export interface TranslationDictionary {
     requestPack: string;
     surveyComplete: string;
   };
+  mortgage: {
+    downPayment: string;
+    term: string;
+    interestRate: string;
+    insuranceYear: string;
+    loanAmount: string;
+    estimatedMonthly: string;
+    principalAndInterest: string;
+    propertyTax: string;
+    insurance: string;
+    hoa: string;
+    totalInterestOver: string;
+    years: string;
+    estimateDisclaimer: string;
+    balance: string;
+    year: string;
+  };
   agent: {
     title: string;
     subtitle: string;
@@ -278,5 +296,22 @@ export interface TranslationDictionary {
     subscribe: string;
     hours: string;
     hoursLabel: string;
+    share: string;
+    shareThisHome: string;
+    linkCopied: string;
+    previousPhoto: string;
+    nextPhoto: string;
+    photographs: string;
+    openGallery: string;
+    openPhotoPrefix: string;
+    platesSuffix: string;
+    getDirections: string;
+    propertyLocation: string;
+    viewProperty: string;
+    viewRecord: string;
+    planView: string;
+    parcel: string;
+    parcels: string;
+    loadingMap: string;
   };
 }

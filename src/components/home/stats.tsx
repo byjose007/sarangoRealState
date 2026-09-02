@@ -1,8 +1,13 @@
-import { companyStats } from '@/data/reference';
+'use client';
+
+import { getCompanyStats } from '@/data/reference';
 import { Counter } from '@/components/shared/counter';
 import { Reveal } from '@/components/shared/reveal';
+import { useTranslation } from '@/i18n/context';
 
 export function Stats() {
+  const { isEs } = useTranslation();
+  const companyStats = getCompanyStats(isEs);
   return (
     <section className="border-y border-border bg-foreground py-16 text-background">
       <div className="container grid gap-10 sm:grid-cols-2 lg:grid-cols-4">

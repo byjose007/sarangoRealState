@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Expand, Images } from 'lucide-react';
 import { SmartImage } from '@/components/shared/smart-image';
 import { Modal } from '@/components/ui/modal';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/i18n/context';
 
 interface GalleryProps {
   images: string[];
@@ -18,6 +19,7 @@ interface GalleryProps {
  * Any frame opens the lightbox with keyboard navigation.
  */
 export function PropertyGallery({ images, title, reference }: GalleryProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = React.useState(false);
   const [index, setIndex] = React.useState(0);
 
@@ -42,7 +44,7 @@ export function PropertyGallery({ images, title, reference }: GalleryProps) {
   };
 
   return (
-    <section aria-label="Photographs">
+    <section aria-label={t.common.photographs}>
       <div className="grid gap-3 md:grid-cols-[2fr_1fr]">
         <button
           type="button"
@@ -82,7 +84,7 @@ export function PropertyGallery({ images, title, reference }: GalleryProps) {
               {position === 2 ? (
                 <span className="absolute inset-0 grid place-items-center bg-foreground/45 font-mono text-xs uppercase tracking-[0.16em] text-background opacity-0 transition-opacity group-hover:opacity-100">
                   <Expand className="mb-2 size-5" />
-                  Open gallery
+                  {t.common.openGallery}
                 </span>
               ) : null}
             </button>
@@ -90,13 +92,13 @@ export function PropertyGallery({ images, title, reference }: GalleryProps) {
         </div>
       </div>
 
-      <div className="mt-3 flex gap-3 overflow-x-auto no-scrollbar">
+      <div className="no-scrollbar mt-3 flex gap-3 overflow-x-auto">
         {images.map((image, position) => (
           <button
             key={image}
             type="button"
             onClick={() => openAt(position)}
-            aria-label={`Open photograph ${position + 1}`}
+            aria-label={`${t.common.openPhotoPrefix} ${position + 1}`}
             className={cn(
               'relative h-20 w-28 shrink-0 overflow-hidden rounded-sm border-2 transition-colors',
               position === index ? 'border-brass' : 'border-transparent hover:border-border',
@@ -117,7 +119,7 @@ export function PropertyGallery({ images, title, reference }: GalleryProps) {
           className="grid h-20 w-28 shrink-0 place-items-center rounded-sm border border-dashed border-border font-mono text-[0.62rem] uppercase tracking-[0.12em] text-muted-foreground hover:bg-muted"
         >
           <Images className="mb-1 size-4" />
-          {images.length} plates
+          {images.length} {t.common.platesSuffix}
         </button>
       </div>
 
@@ -146,7 +148,7 @@ export function PropertyGallery({ images, title, reference }: GalleryProps) {
           <button
             type="button"
             onClick={() => show(index - 1)}
-            aria-label="Previous photograph"
+            aria-label={t.common.previousPhoto}
             className="absolute left-4 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-background/85 hover:bg-background"
           >
             <ChevronLeft className="size-5" />
@@ -154,7 +156,7 @@ export function PropertyGallery({ images, title, reference }: GalleryProps) {
           <button
             type="button"
             onClick={() => show(index + 1)}
-            aria-label="Next photograph"
+            aria-label={t.common.nextPhoto}
             className="absolute right-4 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-background/85 hover:bg-background"
           >
             <ChevronRight className="size-5" />

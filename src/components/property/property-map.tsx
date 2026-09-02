@@ -9,16 +9,24 @@ import type { MapPoint } from '@/lib/map';
 import { mapConfig } from '@/constants/site';
 import { formatListingPrice } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/i18n/context';
+
+// `next/dynamic`'s `loading` is rendered as its own component, so it can
+// call hooks — that's how it reaches the current language for its label.
+function MapLoading() {
+  const { t } = useTranslation();
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-muted/40">
+      <div className="flex animate-pulse items-center gap-2 font-mono text-xs text-muted-foreground">
+        <MapPin className="size-4 text-brass" /> {t.common.loadingMap}
+      </div>
+    </div>
+  );
+}
 
 const OpenStreetMap = dynamic(() => import('./open-street-map'), {
   ssr: false,
-  loading: () => (
-    <div className="flex h-full w-full items-center justify-center bg-muted/40">
-      <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground animate-pulse">
-        <MapPin className="size-4 text-brass" /> Cargando mapa OpenStreetMap...
-      </div>
-    </div>
-  ),
+  loading: MapLoading,
 });
 
 interface PropertyMapProps {
@@ -46,6 +54,7 @@ export function PropertyMap({
   allowProvider = false,
   address,
 }: PropertyMapProps) {
+  const { t } = useTranslation();
   const [active, setActive] = React.useState<string | null>(points[0]?.id ?? null);
   const focus = center ?? points[0]?.coordinates ?? { lat: -2.9001, lng: -79.0059 };
   const directions = `https://www.google.com/maps/search/?api=1&query=${focus.lat},${focus.lng}`;
@@ -54,7 +63,7 @@ export function PropertyMap({
     return (
       <Frame className={className} directions={directions}>
         <iframe
-          title="Property location"
+          title={t.common.propertyLocation}
           loading="lazy"
           allowFullScreen
           referrerPolicy="no-referrer-when-downgrade"
@@ -72,7 +81,7 @@ export function PropertyMap({
     return (
       <Frame className={className} directions={directions}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt="Property location" className="h-full w-full object-cover" />
+        <img src={src} alt={t.common.propertyLocation} className="h-full w-full object-cover" />
       </Frame>
     );
   }
@@ -106,7 +115,11 @@ export function PropertyMap({
         {points.map((point) => {
           const isActive = point.id === active;
           return (
-            <div key={point.id} className="absolute -translate-x-1/2 -translate-y-1/2" style={position(point.coordinates)}>
+            <div
+              key={point.id}
+              className="absolute -translate-x-1/2 -translate-y-1/2"
+              style={position(point.coordinates)}
+            >
               <button
                 type="button"
                 onClick={() => setActive(isActive ? null : point.id)}
@@ -129,7 +142,7 @@ export function PropertyMap({
                 >
                   <p className="font-display text-sm leading-tight">{point.label}</p>
                   <p className="mt-1 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted-foreground">
-                    View record
+                    {t.common.viewRecord}
                   </p>
                 </Link>
               ) : null}
@@ -138,7 +151,8 @@ export function PropertyMap({
         })}
 
         <span className="absolute bottom-3 left-3 rounded-full bg-surface/90 px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-muted-foreground">
-          Plan view · {points.length} {points.length === 1 ? 'parcel' : 'parcels'}
+          {t.common.planView} · {points.length}{' '}
+          {points.length === 1 ? t.common.parcel : t.common.parcels}
         </span>
       </div>
     </Frame>
@@ -154,6 +168,7 @@ function Frame({
   className?: string;
   directions: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div className={cn('relative overflow-hidden rounded-lg border border-border', className)}>
       {children}
@@ -163,7 +178,7 @@ function Frame({
         rel="noreferrer noopener"
         className="absolute right-3 top-3 inline-flex items-center gap-2 rounded-full bg-surface/95 px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.14em] shadow-soft hover:bg-surface"
       >
-        Get directions <ExternalLink className="size-3" />
+        {t.common.getDirections} <ExternalLink className="size-3" />
       </a>
     </div>
   );

@@ -6,8 +6,10 @@ import { FaFacebookF, FaLinkedinIn, FaWhatsapp, FaXTwitter } from 'react-icons/f
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
+import { useTranslation } from '@/i18n/context';
 
 export function ShareButtons({ title, path }: { title: string; path: string }) {
+  const { t } = useTranslation();
   const [open, setOpen] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
   const [url, setUrl] = React.useState(path);
@@ -17,16 +19,32 @@ export function ShareButtons({ title, path }: { title: string; path: string }) {
   }, [path]);
 
   const links = [
-    { label: 'WhatsApp', icon: FaWhatsapp, href: `https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}` },
-    { label: 'X', icon: FaXTwitter, href: `https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}` },
-    { label: 'Facebook', icon: FaFacebookF, href: `https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}` },
-    { label: 'LinkedIn', icon: FaLinkedinIn, href: `https://linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}` },
+    {
+      label: 'WhatsApp',
+      icon: FaWhatsapp,
+      href: `https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}`,
+    },
+    {
+      label: 'X',
+      icon: FaXTwitter,
+      href: `https://x.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`,
+    },
+    {
+      label: 'Facebook',
+      icon: FaFacebookF,
+      href: `https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+    },
+    {
+      label: 'LinkedIn',
+      icon: FaLinkedinIn,
+      href: `https://linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+    },
   ];
 
   const copy = async () => {
     await navigator.clipboard.writeText(url);
     setCopied(true);
-    toast.success('Link copied');
+    toast.success(t.common.linkCopied);
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -45,10 +63,10 @@ export function ShareButtons({ title, path }: { title: string; path: string }) {
   return (
     <>
       <Button variant="outline" onClick={share} className="h-11">
-        <Share2 className="size-4" /> Share
+        <Share2 className="size-4" /> {t.common.share}
       </Button>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Share this home">
+      <Modal open={open} onClose={() => setOpen(false)} title={t.common.shareThisHome}>
         <div className="grid grid-cols-4 gap-3">
           {links.map((link) => (
             <a
