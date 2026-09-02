@@ -185,6 +185,8 @@ export interface TranslationDictionary {
     clearAllFilters: string;
     emptyTitle: string;
     emptyBody: string;
+    emptyCatalogTitle: string;
+    emptyCatalogBody: string;
     showHomes: string;
   };
   propertyDetail: {

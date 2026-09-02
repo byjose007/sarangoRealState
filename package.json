@@ -14,7 +14,9 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,md}\"",
     "prepare": "husky || true",
     "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
+    "db:seed:demo": "SEED_DEMO_DATA=1 prisma db seed",
     "db:studio": "prisma studio"
   },
   "dependencies": {

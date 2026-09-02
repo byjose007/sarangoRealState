@@ -1,8 +1,8 @@
 # Vestra — premium real estate template
 
-A production-ready Next.js 15 template for a survey-first residential brokerage.
-100 listings, 20 agents, 30 journal articles, 10 cities, full filtering, comparison,
-favourites, mortgage maths, floor plans, 360° tour and a complete SEO layer.
+A production-ready Next.js 16 template for a survey-first residential brokerage.
+Full filtering, comparison, favourites, mortgage maths, floor plans, 360° tour
+and a complete SEO layer, on top of a Prisma/Postgres-backed admin CRM.
 
 Built as a commercial-grade template: strict TypeScript, modular architecture,
 no dead files, `next build` passes with 165 pre-rendered pages.
@@ -14,8 +14,12 @@ no dead files, `next build` passes with 165 pre-rendered pages.
 ```bash
 npm install
 cp .env.example .env.local   # optional — everything works without keys
+npm run db:seed              # admin login + José Sarango, empty catalogue
 npm run dev                  # http://localhost:3000
 ```
+
+Want the UI populated with sample agents/listings while building locally?
+Run `npm run db:seed:demo` instead — see "Seeding" below.
 
 Other scripts:
 
@@ -150,6 +154,20 @@ interactive controls, reduced-motion support, responsive from 360px up.
 Works unchanged on Vercel (`vercel deploy`), or `npm run build && npm run start`
 behind any Node host. Set `NEXT_PUBLIC_SITE_URL` in production so metadata,
 canonicals and the sitemap resolve to the right origin.
+
+## Seeding
+
+`src/data/{agents,properties}.ts` still carries this project's original
+Vestra template: a real agent (José Sarango) alongside a leftover fake one
+("Arlene McCoy" — her social links are literally copy-pasted from José's) and
+~100 procedurally generated listings with stock Unsplash photography.
+
+`npm run db:seed` is production-safe by default: it seeds only the admin
+login and José Sarango, with an empty property catalogue — add real listings
+(with real photos) through `/admin/properties`. Use `npm run db:seed:demo`
+(or `SEED_DEMO_DATA=1 npm run db:seed`) instead when you want the template's
+fake agent and generated listings for trying the UI out locally; never run
+that against a real/production database.
 
 ## Backups
 

@@ -56,7 +56,8 @@ export const es: TranslationDictionary = {
     eyebrow: 'Inmobiliaria de Alta Gama',
     titleLine1: 'Hogares medidos,',
     titleLine2: 'no comercializados.',
-    subtitle: 'Vestra es una agencia inmobiliaria boutique. Cada propiedad se mide, dibuja y documenta antes de llegar al mercado para que compres con certezas.',
+    subtitle:
+      'Vestra es una agencia inmobiliaria boutique. Cada propiedad se mide, dibuja y documenta antes de llegar al mercado para que compres con certezas.',
     tabBuy: 'Comprar',
     tabRent: 'Alquilar',
     tabNewDev: 'Obra nueva',
@@ -111,14 +112,18 @@ export const es: TranslationDictionary = {
   },
   home: {
     pillarsTitle: 'Nuestros Pilares de Confianza',
-    pillarsSubtitle: 'Fundada en la precisión técnica, el rigor en los datos y la transparencia total.',
+    pillarsSubtitle:
+      'Fundada en la precisión técnica, el rigor en los datos y la transparencia total.',
     featuredTitle: 'Propiedades Destacadas',
-    featuredSubtitle: 'Una selección exclusiva de residencias analizadas al detalle por nuestro equipo.',
+    featuredSubtitle:
+      'Una selección exclusiva de residencias analizadas al detalle por nuestro equipo.',
     typesTitle: 'Estilos de Vida & Tipologías',
-    typesSubtitle: 'Encuentra el hogar que encaja exactamente con tus necesidades de espacio y diseño.',
+    typesSubtitle:
+      'Encuentra el hogar que encaja exactamente con tus necesidades de espacio y diseño.',
     statsTitle: 'Resultados en Cifras',
     videoTitle: 'El Rigor de Nuestro Proceso',
-    videoSubtitle: 'Descubre cómo auditamos y escaneamos 3D cada espacio antes de ponerlo a la venta.',
+    videoSubtitle:
+      'Descubre cómo auditamos y escaneamos 3D cada espacio antes de ponerlo a la venta.',
     citiesTitle: 'Ciudades & Destinos',
     citiesSubtitle: 'Explora nuestros mercados principales con cobertura local integral.',
     agentsTitle: 'Nuestros Asesores',
@@ -139,7 +144,8 @@ export const es: TranslationDictionary = {
     listed: 'publicadas',
     insideSurvey: 'Dentro de una auditoría',
     surveySub: 'Cuatro horas en cada casa, antes de publicar la primera foto',
-    surveyDesc: 'Nuestro equipo de campo mide cada estancia, fotografía los alzados, revisa los suministros y anota cada reforma. Lleva media jornada y ahorra semanas al comprador.',
+    surveyDesc:
+      'Nuestro equipo de campo mide cada estancia, fotografía los alzados, revisa los suministros y anota cada reforma. Lleva media jornada y ahorra semanas al comprador.',
     surveyItems: [
       'Dimensiones habitación por habitación',
       'Lecturas de contadores de 12 meses',
@@ -162,7 +168,7 @@ export const es: TranslationDictionary = {
   },
   explorer: {
     title: 'Catálogo de propiedades',
-    subtitle: 'Filtra 100 propiedades auditadas por ciudad, tipo, precio, superficie y comodidades.',
+    subtitle: 'Filtra propiedades auditadas por ciudad, tipo, precio, superficie y comodidades.',
     results: 'Resultados',
     home: 'vivienda',
     homes: 'viviendas',
@@ -189,7 +195,10 @@ export const es: TranslationDictionary = {
     mustInclude: 'Debe incluir',
     clearAllFilters: 'Limpiar todos los filtros',
     emptyTitle: 'Sin coincidencias para estos filtros',
-    emptyBody: 'Amplía el rango de precio o quita algún filtro — hay 100 viviendas en el catálogo.',
+    emptyBody: 'Amplía el rango de precio o quita algún filtro.',
+    emptyCatalogTitle: 'Aún no hay propiedades publicadas',
+    emptyCatalogBody:
+      'Estamos preparando el catálogo — vuelve pronto o contáctanos directamente para consultas.',
     showHomes: 'Ver viviendas',
   },
   propertyDetail: {
@@ -229,7 +238,8 @@ export const es: TranslationDictionary = {
     requestSlot: 'Solicitar este horario',
     sending: 'Enviando…',
     needRawFile: '¿Necesitas el dossier completo?',
-    rawFileDesc: 'El paquete de auditoría completo con planos medidos y lecturas está disponible para descarga.',
+    rawFileDesc:
+      'El paquete de auditoría completo con planos medidos y lecturas está disponible para descarga.',
     requestPack: 'Solicitar dossier →',
     surveyComplete: 'Auditoría completada',
   },
@@ -244,7 +254,8 @@ export const es: TranslationDictionary = {
     yearsExp: 'años exp.',
     listingsCarriedBy: 'Propiedades gestionadas por',
     noLiveListings: 'Sin propiedades activas en este momento',
-    noLiveListingsBody: 'Todas las propiedades de este agente han sido cerradas. Consúltanos por las próximas novedades.',
+    noLiveListingsBody:
+      'Todas las propiedades de este agente han sido cerradas. Consúltanos por las próximas novedades.',
     yourName: 'Tu nombre',
     phoneOptional: 'Teléfono (opcional)',
     message: 'Mensaje',

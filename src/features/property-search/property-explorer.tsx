@@ -25,7 +25,7 @@ import { usePropertyFilters } from './use-property-filters';
  * Listing shell. Reads state from the URL, runs it through the property
  * service, and swaps between grid, list and map without losing the query.
  */
-export function PropertyExplorer() {
+export function PropertyExplorer({ catalogTotal }: { catalogTotal: number }) {
   const { filters, view, write, activeCount, reset } = usePropertyFilters();
   const { t, isEs } = useTranslation();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
@@ -46,14 +46,15 @@ export function PropertyExplorer() {
   React.useEffect(() => {
     let active = true;
     setLoading(true);
-    Promise.all([searchPropertiesAction({ ...filters, perPage: PER_PAGE }), searchAllAction(filters)]).then(
-      ([searchResult, allResult]) => {
-        if (!active) return;
-        setResult(searchResult);
-        setMapItems(allResult.slice(0, 40));
-        setLoading(false);
-      },
-    );
+    Promise.all([
+      searchPropertiesAction({ ...filters, perPage: PER_PAGE }),
+      searchAllAction(filters),
+    ]).then(([searchResult, allResult]) => {
+      if (!active) return;
+      setResult(searchResult);
+      setMapItems(allResult.slice(0, 40));
+      setLoading(false);
+    });
     return () => {
       active = false;
     };
@@ -73,7 +74,9 @@ export function PropertyExplorer() {
       <div>
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border pb-5">
           <div>
-            <p className="font-mono text-eyebrow uppercase text-muted-foreground">{t.explorer.results}</p>
+            <p className="font-mono text-eyebrow uppercase text-muted-foreground">
+              {t.explorer.results}
+            </p>
             <p className="mt-1 font-display text-2xl tracking-tight">
               {result.total} {result.total === 1 ? t.explorer.home : t.explorer.homes}
               {activeCount ? (
@@ -89,7 +92,12 @@ export function PropertyExplorer() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setDrawerOpen(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="lg:hidden"
+              onClick={() => setDrawerOpen(true)}
+            >
               <SlidersHorizontal className="size-4" /> {t.explorer.filters}
             </Button>
 
@@ -133,6 +141,11 @@ export function PropertyExplorer() {
                 <PropertyCardSkeleton key={index} />
               ))}
             </div>
+          ) : result.total === 0 && catalogTotal === 0 ? (
+            // Genuinely empty catalogue (no properties published at all) —
+            // distinct from "no matches for the current filters" below, since
+            // "widen your filters" is bad advice when there's nothing to find.
+            <EmptyState title={t.explorer.emptyCatalogTitle} body={t.explorer.emptyCatalogBody} />
           ) : result.total === 0 ? (
             <EmptyState
               title={t.explorer.emptyTitle}
@@ -142,7 +155,10 @@ export function PropertyExplorer() {
             />
           ) : view === 'map' ? (
             <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
-              <PropertyMap points={mapItems.map(toMapPoint)} className="h-[34rem] lg:sticky lg:top-28" />
+              <PropertyMap
+                points={mapItems.map(toMapPoint)}
+                className="h-[34rem] lg:sticky lg:top-28"
+              />
               <div className="flex max-h-[34rem] flex-col gap-4 overflow-y-auto pr-1">
                 <PropertyGrid properties={result.items} layout="list" />
               </div>
@@ -166,7 +182,12 @@ export function PropertyExplorer() {
         ) : null}
       </div>
 
-      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} side="left" title={t.explorer.filters}>
+      <Drawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        side="left"
+        title={t.explorer.filters}
+      >
         <div className="p-5">
           <FilterSidebar />
           <Button className="mt-6 w-full" onClick={() => setDrawerOpen(false)}>

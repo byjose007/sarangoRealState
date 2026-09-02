@@ -33,6 +33,23 @@ const PRICE_PERIOD_MAP: Record<Property['pricePeriod'], 'MONTH' | 'TOTAL'> = {
 
 const DEV_PASSWORD = 'vestra-dev-2026';
 
+/**
+ * `src/data/{agents,properties}.ts` is a *template* fixture: alongside the
+ * one real agent (José Sarango) it still carries the original Vestra demo
+ * — a second fake agent ("Arlene McCoy", whose social links are literally
+ * copy-pasted from José's) and ~100 procedurally generated fake listings
+ * with stock Unsplash photography. Seeding all of that into a real
+ * database would put a fabricated agent and fabricated inventory on the
+ * live site.
+ *
+ * Default (`npm run db:seed`) is production-safe: the real admin login
+ * plus José Sarango, zero properties — a clean slate for real listings
+ * added through /admin/properties. Pass SEED_DEMO_DATA=1 to also seed the
+ * template's fake agent + generated catalogue, for local development only.
+ */
+const SEED_DEMO_DATA = process.env.SEED_DEMO_DATA === '1' || process.env.SEED_DEMO_DATA === 'true';
+const REAL_AGENT_SLUGS = new Set(['jose-sarango']);
+
 async function upsertUser(email: string, role: 'ADMIN' | 'AGENT') {
   const passwordHash = await bcrypt.hash(DEV_PASSWORD, 10);
   return prisma.user.upsert({
@@ -43,13 +60,23 @@ async function upsertUser(email: string, role: 'ADMIN' | 'AGENT') {
 }
 
 async function main() {
-  console.log('Seeding admin user...');
+  console.log(`Seeding admin user... (SEED_DEMO_DATA=${SEED_DEMO_DATA ? 'on — includes template demo content' : 'off — production-safe'})`);
   await upsertUser('admin@vestra.estate', 'ADMIN');
 
-  console.log(`Seeding ${mockAgents.length} agents...`);
+  const agentsToSeed = SEED_DEMO_DATA ? mockAgents : mockAgents.filter((agent) => REAL_AGENT_SLUGS.has(agent.slug));
+  // Even the one listing the generator hand-tailors with José's real address/
+  // price/description (see src/data/properties.ts — `isJoseSarango`) still
+  // renders it with stock Unsplash photography, same as every generated
+  // listing. A specific real address with photos that aren't of that
+  // address is worse than an empty catalogue, so production mode seeds no
+  // properties at all — every listing comes from a real one added through
+  // /admin/properties, photos included.
+  const propertiesToSeed = SEED_DEMO_DATA ? mockProperties : [];
+
+  console.log(`Seeding ${agentsToSeed.length} agent(s)...`);
   const agentIdByMockId = new Map<string, string>();
 
-  for (const agent of mockAgents) {
+  for (const agent of agentsToSeed) {
     const localPart = agent.email.split('@')[0].replace(/[^a-z0-9.]/gi, '');
     const loginEmail = `${localPart}@vestra.estate`;
     const user = await upsertUser(loginEmail, 'AGENT');
@@ -89,8 +116,8 @@ async function main() {
     agentIdByMockId.set(agent.id, created.id);
   }
 
-  console.log(`Seeding ${mockProperties.length} properties...`);
-  for (const property of mockProperties) {
+  console.log(`Seeding ${propertiesToSeed.length} properties...`);
+  for (const property of propertiesToSeed) {
     const agentId = agentIdByMockId.get(property.agentId);
     if (!agentId) {
       console.warn(`Skipping ${property.slug} — unknown mock agentId ${property.agentId}`);
@@ -157,9 +184,13 @@ async function main() {
   }
 
   console.log('Done.');
+  if (!SEED_DEMO_DATA) {
+    console.log('Catalogue is empty by design — add real listings via /admin/properties.');
+    console.log('Pass SEED_DEMO_DATA=1 to also load the template demo agent + generated listings for local dev.');
+  }
   console.log(`Dev login password for every seeded user: ${DEV_PASSWORD}`);
   console.log('Admin: admin@vestra.estate');
-  for (const agent of mockAgents) {
+  for (const agent of agentsToSeed) {
     const localPart = agent.email.split('@')[0].replace(/[^a-z0-9.]/gi, '');
     console.log(`Agent (${agent.name}): ${localPart}@vestra.estate`);
   }

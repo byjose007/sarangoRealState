@@ -21,20 +21,29 @@ RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists
 
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 # next.config.mjs has output: 'standalone' — this folder is a self-contained
 # server bundle with only the node_modules actually needed at runtime.
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-# Prisma 7 has no native query-engine binary — the generated client under
-# src/generated/prisma is plain TS/JS and ships inside the standalone bundle
-# above like any other app module. `prisma migrate deploy` (which does need
-# the schema-engine binary + the `prisma` CLI) runs from the `builder` stage
-# as a separate one-off container — see the `migrate` service in compose.
+
+# Copy Prisma schema and CLI so migrations can run on container boot
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/dotenv ./node_modules/dotenv
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/.bin
+
+COPY --chown=nextjs:nodejs docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
 
 RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads
 
 USER nextjs
 EXPOSE 3000
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "server.js"]

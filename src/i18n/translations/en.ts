@@ -56,7 +56,8 @@ export const en: TranslationDictionary = {
     eyebrow: 'Boutique Residential Brokerage',
     titleLine1: 'Homes measured,',
     titleLine2: 'not marketed.',
-    subtitle: 'Vestra is a boutique residential brokerage. Every listing is surveyed, drawn and documented before it reaches the market, so you buy on evidence instead of adjectives.',
+    subtitle:
+      'Vestra is a boutique residential brokerage. Every listing is surveyed, drawn and documented before it reaches the market, so you buy on evidence instead of adjectives.',
     tabBuy: 'Buy',
     tabRent: 'Rent',
     tabNewDev: 'New release',
@@ -139,7 +140,8 @@ export const en: TranslationDictionary = {
     listed: 'listed',
     insideSurvey: 'Inside a survey',
     surveySub: 'Four hours in a house, before anyone sees a photograph',
-    surveyDesc: 'Our field team measures every room, photographs each elevation, reads the meters and notes what the last owner changed. It takes half a day. It saves buyers weeks.',
+    surveyDesc:
+      'Our field team measures every room, photographs each elevation, reads the meters and notes what the last owner changed. It takes half a day. It saves buyers weeks.',
     surveyItems: [
       'Room-by-room dimensions',
       'Meter readings, twelve months',
@@ -162,7 +164,7 @@ export const en: TranslationDictionary = {
   },
   explorer: {
     title: 'Homes for sale and rent',
-    subtitle: 'Filter 100 surveyed listings by city, type, price, floor area and amenities.',
+    subtitle: 'Filter surveyed listings by city, type, price, floor area and amenities.',
     results: 'Results',
     home: 'home',
     homes: 'homes',
@@ -189,7 +191,9 @@ export const en: TranslationDictionary = {
     mustInclude: 'Must include',
     clearAllFilters: 'Clear all filters',
     emptyTitle: 'Nothing matches those filters',
-    emptyBody: 'Widen the price range or clear a filter — there are 100 homes in the catalogue.',
+    emptyBody: 'Widen the price range or clear a filter.',
+    emptyCatalogTitle: 'No properties published yet',
+    emptyCatalogBody: "We're preparing the catalogue — check back soon or reach out directly.",
     showHomes: 'Show homes',
   },
   propertyDetail: {
@@ -229,7 +233,8 @@ export const en: TranslationDictionary = {
     requestSlot: 'Request this slot',
     sending: 'Sending…',
     needRawFile: 'Need the raw file?',
-    rawFileDesc: 'The complete survey pack, including the measured plan and twelve months of readings, is available as a single download.',
+    rawFileDesc:
+      'The complete survey pack, including the measured plan and twelve months of readings, is available as a single download.',
     requestPack: 'Request the pack →',
     surveyComplete: 'Survey complete',
   },
@@ -244,7 +249,8 @@ export const en: TranslationDictionary = {
     yearsExp: 'yrs',
     listingsCarriedBy: 'Listings carried by',
     noLiveListings: 'No live listings right now',
-    noLiveListingsBody: 'Every home this agent carried has closed. Ask about what is coming to market next.',
+    noLiveListingsBody:
+      'Every home this agent carried has closed. Ask about what is coming to market next.',
     yourName: 'Your name',
     phoneOptional: 'Phone (optional)',
     message: 'Message',

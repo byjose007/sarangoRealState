@@ -8,7 +8,7 @@ import { PropertiesPageHeader } from '@/components/property/property-page-header
 export const metadata = buildMetadata({
   title: 'Homes for sale and rent',
   description:
-    'Filter 100 surveyed listings by city, type, price, floor area and amenities. Grid, list and plan views.',
+    'Filter surveyed listings by city, type, price, floor area and amenities. Grid, list and plan views.',
   path: '/properties',
 });
 
@@ -34,7 +34,7 @@ export default async function PropertiesPage() {
           </div>
         }
       >
-        <PropertyExplorer />
+        <PropertyExplorer catalogTotal={facets.total} />
       </Suspense>
     </>
   );
