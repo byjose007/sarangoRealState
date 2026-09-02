@@ -17,9 +17,28 @@ import { Rating } from '@/components/shared/rating';
 import { Button } from '@/components/ui/button';
 import { FieldError, Input, Textarea } from '@/components/ui/input';
 
-export function AgentContactCard({ agent, subject }: { agent: Agent; subject?: string }) {
+export function AgentContactCard({
+  agent,
+  subject,
+  propertyTitle,
+  propertyRef,
+}: {
+  agent: Agent;
+  subject?: string;
+  propertyTitle?: string;
+  propertyRef?: string;
+}) {
   const [pending, setPending] = React.useState(false);
   const { t, isEs } = useTranslation();
+
+  const whatsappMessage =
+    propertyTitle && propertyRef
+      ? `Hola José Sarango, estoy interesado en la propiedad: ${propertyTitle} (Ref: ${propertyRef})`
+      : subject
+        ? `Hola José Sarango, estoy interesado en: ${subject}`
+        : `Hola José Sarango, me gustaría obtener más información sobre sus propiedades.`;
+
+  const whatsappUrl = `https://wa.me/${siteConfig.whatsapp}?text=${encodeURIComponent(whatsappMessage)}`;
 
   const {
     register,
@@ -33,7 +52,9 @@ export function AgentContactCard({ agent, subject }: { agent: Agent; subject?: s
       email: '',
       phone: '',
       message: subject
-        ? isEs ? `Me gustaría solicitar más información sobre ${subject}.` : `I would like more information about ${subject}.`
+        ? isEs
+          ? `Me gustaría solicitar más información sobre ${subject}.`
+          : `I would like more information about ${subject}.`
         : '',
     },
   });
@@ -54,15 +75,24 @@ export function AgentContactCard({ agent, subject }: { agent: Agent; subject?: s
     <div className="rounded-lg border border-border bg-card p-6">
       <div className="flex items-center gap-4">
         <div className="relative size-16 shrink-0 overflow-hidden rounded-full">
-          <SmartImage src={agent.avatar} alt={agent.name} fill sizes="64px" fallbackSeed={agent.id} />
+          <SmartImage
+            src={agent.avatar}
+            alt={agent.name}
+            fill
+            sizes="64px"
+            fallbackSeed={agent.id}
+          />
         </div>
         <div>
-          <Link href={`/agents/${agent.slug}`} className="font-display text-lg tracking-tight hover:text-primary">
+          <Link
+            href={`/agents/${agent.slug}`}
+            className="font-display text-lg tracking-tight hover:text-primary"
+          >
             {agent.name}
           </Link>
           <p className="text-sm text-muted-foreground">{agent.role}</p>
           {agent.license && (
-            <p className="flex items-center gap-1.5 text-xs text-brass font-medium mt-0.5">
+            <p className="mt-0.5 flex items-center gap-1.5 text-xs font-medium text-brass">
               <ShieldCheck className="size-3.5" /> {agent.license}
             </p>
           )}
@@ -72,8 +102,8 @@ export function AgentContactCard({ agent, subject }: { agent: Agent; subject?: s
 
       <div className="mt-5 space-y-2 border-y border-border py-4 font-mono text-xs">
         {agent.address && (
-          <div className="flex items-start gap-2 text-muted-foreground pb-1">
-            <MapPin className="size-3.5 shrink-0 text-brass mt-0.5" />
+          <div className="flex items-start gap-2 pb-1 text-muted-foreground">
+            <MapPin className="mt-0.5 size-3.5 shrink-0 text-brass" />
             <span className="leading-snug">{agent.address}</span>
           </div>
         )}
@@ -84,7 +114,7 @@ export function AgentContactCard({ agent, subject }: { agent: Agent; subject?: s
           <Mail className="size-3.5 text-brass" /> {agent.email}
         </a>
         {(agent.social?.tiktok || agent.social?.instagram || agent.social?.facebook) && (
-          <div className="flex items-center gap-2 pt-2 border-t border-border/50 mt-2">
+          <div className="mt-2 flex items-center gap-2 border-t border-border/50 pt-2">
             {agent.social?.tiktok && (
               <a
                 href={agent.social.tiktok}
@@ -124,15 +154,28 @@ export function AgentContactCard({ agent, subject }: { agent: Agent; subject?: s
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-5 space-y-3">
         <div>
-          <Input placeholder={t.agent.yourName} aria-label={t.agent.yourName} {...register('name')} />
+          <Input
+            placeholder={t.agent.yourName}
+            aria-label={t.agent.yourName}
+            {...register('name')}
+          />
           <FieldError message={errors.name?.message} />
         </div>
         <div>
-          <Input type="email" placeholder={t.propertyDetail.email} aria-label={t.propertyDetail.email} {...register('email')} />
+          <Input
+            type="email"
+            placeholder={t.propertyDetail.email}
+            aria-label={t.propertyDetail.email}
+            {...register('email')}
+          />
           <FieldError message={errors.email?.message} />
         </div>
         <div>
-          <Input placeholder={t.agent.phoneOptional} aria-label={t.agent.phoneOptional} {...register('phone')} />
+          <Input
+            placeholder={t.agent.phoneOptional}
+            aria-label={t.agent.phoneOptional}
+            {...register('phone')}
+          />
         </div>
         <div>
           <Textarea rows={4} aria-label={t.agent.message} {...register('message')} />
@@ -144,10 +187,10 @@ export function AgentContactCard({ agent, subject }: { agent: Agent; subject?: s
       </form>
 
       <a
-        href={`https://wa.me/${siteConfig.whatsapp}`}
+        href={whatsappUrl}
         target="_blank"
         rel="noreferrer noopener"
-        className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] text-sm font-medium text-black"
+        className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#25D366] text-sm font-medium text-black transition-opacity hover:opacity-90"
       >
         <FaWhatsapp className="size-4" /> {t.agent.chatWhatsapp}
       </a>

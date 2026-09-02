@@ -1,7 +1,12 @@
 'use server';
 
 import { agentMessageSchema, contactSchema, viewingSchema } from '@/lib/validation';
-import { createLeadFromAgentMessage, createLeadFromContact, createLeadFromViewing } from '@/lib/leads-intake';
+import {
+  createLeadFromAgentMessage,
+  createLeadFromContact,
+  createLeadFromViewing,
+} from '@/lib/leads-intake';
+import { getClientIp, rateLimit } from '@/lib/rate-limit';
 
 export interface ActionResult {
   ok: boolean;
@@ -17,10 +22,35 @@ function toFieldErrors(error: { issues: { path: (string | number)[]; message: st
   }, {});
 }
 
+// One shared bucket across all three public lead forms — they're all the
+// same abuse vector (a script hammering the site to fill the leads table),
+// so a visitor genuinely using more than one of them in 15 minutes is rare
+// enough to not worry about separate limits per form.
+const LEAD_LIMIT = 8;
+const LEAD_WINDOW_MS = 15 * 60 * 1000;
+
+async function checkLeadRateLimit(): Promise<ActionResult | null> {
+  const ip = await getClientIp();
+  const { ok, retryAfterSeconds } = rateLimit(`lead:${ip}`, LEAD_LIMIT, LEAD_WINDOW_MS);
+  if (ok) return null;
+  const minutes = Math.max(1, Math.ceil(retryAfterSeconds / 60));
+  return {
+    ok: false,
+    message: `Too many requests. Please try again in ${minutes} minute${minutes === 1 ? '' : 's'}.`,
+  };
+}
+
 export async function requestViewing(input: unknown): Promise<ActionResult> {
+  const limited = await checkLeadRateLimit();
+  if (limited) return limited;
+
   const parsed = viewingSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, message: 'Check the highlighted fields.', fieldErrors: toFieldErrors(parsed.error) };
+    return {
+      ok: false,
+      message: 'Check the highlighted fields.',
+      fieldErrors: toFieldErrors(parsed.error),
+    };
   }
   try {
     await createLeadFromViewing(parsed.data);
@@ -35,9 +65,16 @@ export async function requestViewing(input: unknown): Promise<ActionResult> {
 }
 
 export async function sendContactMessage(input: unknown): Promise<ActionResult> {
+  const limited = await checkLeadRateLimit();
+  if (limited) return limited;
+
   const parsed = contactSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, message: 'Check the highlighted fields.', fieldErrors: toFieldErrors(parsed.error) };
+    return {
+      ok: false,
+      message: 'Check the highlighted fields.',
+      fieldErrors: toFieldErrors(parsed.error),
+    };
   }
   try {
     await createLeadFromContact(parsed.data);
@@ -49,9 +86,16 @@ export async function sendContactMessage(input: unknown): Promise<ActionResult> 
 }
 
 export async function messageAgent(input: unknown, agentId: string): Promise<ActionResult> {
+  const limited = await checkLeadRateLimit();
+  if (limited) return limited;
+
   const parsed = agentMessageSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, message: 'Check the highlighted fields.', fieldErrors: toFieldErrors(parsed.error) };
+    return {
+      ok: false,
+      message: 'Check the highlighted fields.',
+      fieldErrors: toFieldErrors(parsed.error),
+    };
   }
   try {
     await createLeadFromAgentMessage(parsed.data, agentId);

@@ -56,7 +56,16 @@ async function main() {
 
     const created = await prisma.agent.upsert({
       where: { slug: agent.slug },
-      update: {},
+      update: {
+        name: agent.name,
+        role: agent.role,
+        license: agent.license,
+        bio: agent.bio,
+        phone: agent.phone,
+        email: agent.email,
+        address: agent.address,
+        specialties: agent.specialties,
+      },
       create: {
         slug: agent.slug,
         name: agent.name,

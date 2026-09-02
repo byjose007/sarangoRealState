@@ -28,7 +28,7 @@ Other scripts:
 | `npm run typecheck` | `tsc --noEmit`                                |
 | `npm run format`    | Prettier + Tailwind class sorting             |
 
-Node 18.18+ required (developed on Node 22).
+Node 20.19+ required (developed on Node 22).
 
 ---
 
@@ -150,6 +150,64 @@ interactive controls, reduced-motion support, responsive from 360px up.
 Works unchanged on Vercel (`vercel deploy`), or `npm run build && npm run start`
 behind any Node host. Set `NEXT_PUBLIC_SITE_URL` in production so metadata,
 canonicals and the sitemap resolve to the right origin.
+
+## Backups
+
+`docker-compose.yml`'s `postgres_data` volume is local to whatever host runs
+it — if that disk dies, so does the database, unless dumps exist somewhere
+else. `scripts/backup-db.sh` dumps the `db` container to a gzipped,
+timestamped file under `./backups` (kept `RETENTION_DAYS`, default 14) and
+`scripts/restore-db.sh <file>` restores one back.
+
+Wire it up once the VPS is provisioned — from the project root, as a daily
+cron job:
+
+```bash
+chmod +x scripts/backup-db.sh scripts/restore-db.sh
+crontab -e
+# Add:
+0 2 * * * cd /opt/vestra && ./scripts/backup-db.sh >> /var/log/vestra-backup.log 2>&1
+```
+
+`./backups` is gitignored (dumps hold client PII) and stays on the same
+disk as the database by default — copy it off-server too (`rclone`/`rsync`
+to S3, Backblaze, or another host) so a backup survives the host it backs
+up, not just the container.
+
+## Enabling HTTPS
+
+`nginx/nginx.conf` currently only serves plain HTTP — admin credentials and
+session cookies travel unencrypted until this is done. It's written to be a
+5-minute job once there's a real domain, not a redesign:
+
+1. **Point DNS first.** Create an A record for your domain (and `www` if you
+   want it) pointing at the VPS's IP. Certbot's HTTP-01 challenge fails
+   without this — do it before anything below and give it a few minutes to
+   propagate.
+2. **Start the stack** so nginx is up to serve the challenge:
+   `docker compose --profile full up -d --build`.
+3. **Request the certificate** (replace `example.com` and the email):
+   ```bash
+   docker compose run --rm certbot certonly \
+     --webroot -w /var/www/certbot \
+     -d example.com -d www.example.com \
+     --email you@example.com --agree-tos --no-eff-email
+   ```
+4. **Uncomment the 443 `server` block** in `nginx/nginx.conf`, replace every
+   `example.com` in it with your real domain, and uncomment the
+   `return 301 https://...` redirect near the top of the port-80 block (it
+   sits right above the `/uploads/` location — leave `/.well-known/acme-challenge/`
+   reachable over HTTP, renewal needs it).
+5. **Uncomment `- '443:443'`** under the `nginx` service in
+   `docker-compose.yml`.
+6. **Reload:** `docker compose up -d nginx` (or `restart`).
+
+**Renewal** — certificates expire every 90 days. Add a host cron job next to
+the backup one:
+
+```bash
+0 3 * * * cd /opt/vestra && docker compose run --rm certbot renew --quiet && docker compose exec nginx nginx -s reload
+```
 
 ---
 

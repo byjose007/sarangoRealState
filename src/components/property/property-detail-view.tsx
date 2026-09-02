@@ -5,7 +5,14 @@ import Link from 'next/link';
 import { Building2, CalendarDays, Fingerprint, LandPlot, Leaf, Ruler } from 'lucide-react';
 import type { Agent, City, Property } from '@/types';
 import { useTranslation } from '@/i18n/context';
-import { formatArea, formatListingPrice, formatNumber, formatPrice, getStatusLabel, getTypeLabel } from '@/lib/format';
+import {
+  formatArea,
+  formatListingPrice,
+  formatNumber,
+  formatPrice,
+  getStatusLabel,
+  getTypeLabel,
+} from '@/lib/format';
 import { Breadcrumb } from '@/components/layout/breadcrumb';
 import { Badge } from '@/components/ui/badge';
 import { Tabs } from '@/components/ui/tabs';
@@ -42,7 +49,11 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
     { icon: Fingerprint, label: t.propertyDetail.reference, value: property.reference },
     { icon: Building2, label: t.propertyDetail.type, value: getTypeLabel(property.type, language) },
     { icon: Ruler, label: t.propertyDetail.floorArea, value: formatArea(property.area, language) },
-    { icon: LandPlot, label: t.propertyDetail.land, value: property.landArea ? formatArea(property.landArea, language) : '—' },
+    {
+      icon: LandPlot,
+      label: t.propertyDetail.land,
+      value: property.landArea ? formatArea(property.landArea, language) : '—',
+    },
     { icon: CalendarDays, label: t.propertyDetail.yearBuilt, value: String(property.yearBuilt) },
     { icon: Leaf, label: t.propertyDetail.energyRating, value: property.energyRating },
   ];
@@ -52,7 +63,10 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
     [t.propertyDetail.bathrooms, String(property.bathrooms)],
     [t.propertyDetail.garages, String(property.garages || '—')],
     [t.propertyDetail.propertyTax, property.propertyTax ? formatPrice(property.propertyTax) : '—'],
-    [t.propertyDetail.hoaFee, property.hoaFee ? formatPrice(property.hoaFee) : (isEs ? 'Ninguna' : 'None')],
+    [
+      t.propertyDetail.hoaFee,
+      property.hoaFee ? formatPrice(property.hoaFee) : isEs ? 'Ninguna' : 'None',
+    ],
     [t.propertyDetail.viewsThisMonth, formatNumber(property.views)],
   ];
 
@@ -65,7 +79,10 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
           <Breadcrumb
             items={[
               { label: t.property.allProperties, href: '/properties' },
-              { label: city?.name ?? (isEs ? 'Ciudad' : 'City'), href: `/properties?city=${property.citySlug}` },
+              {
+                label: city?.name ?? (isEs ? 'Ciudad' : 'City'),
+                href: `/properties?city=${property.citySlug}`,
+              },
               { label: property.reference },
             ]}
           />
@@ -79,7 +96,7 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
                 <Badge variant="outline">{getTypeLabel(property.type, language)}</Badge>
                 <Badge variant="soft">{t.propertyDetail.surveyComplete}</Badge>
               </div>
-              <h1 className="mt-4 max-w-2xl text-headline balance">{property.title}</h1>
+              <h1 className="balance mt-4 max-w-2xl text-headline">{property.title}</h1>
               <p className="mt-3 text-muted-foreground">{property.address}</p>
               <PropertySpecs property={property} size="md" className="mt-5" />
             </div>
@@ -89,7 +106,8 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
                 {formatListingPrice(property.price, property.pricePeriod, language)}
               </p>
               <p className="mt-1 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted-foreground">
-                {formatPrice(Math.round(property.price / Math.max(property.area, 1)))} {isEs ? 'por m²' : 'per sq ft'}
+                {formatPrice(Math.round(property.price / Math.max(property.area, 1)))}{' '}
+                {isEs ? 'por m²' : 'per sq ft'}
               </p>
               <div className="mt-5 flex flex-wrap gap-2 sm:justify-end">
                 <FavoriteButton propertyId={property.id} title={property.title} withLabel />
@@ -102,7 +120,11 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
       </header>
 
       <div className="container py-10">
-        <PropertyGallery images={property.images} title={property.title} reference={property.reference} />
+        <PropertyGallery
+          images={property.images}
+          title={property.title}
+          reference={property.reference}
+        />
       </div>
 
       <div className="container grid gap-12 pb-16 lg:grid-cols-[1fr_23rem]">
@@ -141,7 +163,10 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
                   content: (
                     <dl className="divide-y divide-border border-y border-border">
                       {details.map(([label, value]) => (
-                        <div key={label} className="flex items-center justify-between py-3.5 text-sm">
+                        <div
+                          key={label}
+                          className="flex items-center justify-between py-3.5 text-sm"
+                        >
                           <dt className="text-muted-foreground">{label}</dt>
                           <dd className="font-mono">{value}</dd>
                         </div>
@@ -197,7 +222,10 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
                 <p className="mb-3 font-mono text-eyebrow uppercase text-muted-foreground">
                   {isEs ? 'Vista 360° interactiva' : '360° room view'}
                 </p>
-                <VirtualTour image={property.images[4] ?? (property.images[1] as string)} title={property.title} />
+                <VirtualTour
+                  image={property.images[4] ?? (property.images[1] as string)}
+                  title={property.title}
+                />
               </div>
             </div>
           </section>
@@ -232,12 +260,19 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
 
         <aside className="space-y-6 lg:sticky lg:top-28 lg:self-start">
           <ScheduleVisit reference={property.reference} />
-          {agent ? <AgentContactCard agent={agent} subject={`${property.reference} — ${property.title}`} /> : null}
+          {agent ? (
+            <AgentContactCard
+              agent={agent}
+              subject={`${property.reference} — ${property.title}`}
+              propertyTitle={property.title}
+              propertyRef={property.reference}
+            />
+          ) : null}
           <div className="rounded-lg border border-border bg-card p-6">
-            <p className="font-mono text-eyebrow uppercase text-muted-foreground">{t.propertyDetail.needRawFile}</p>
-            <p className="mt-3 text-sm text-muted-foreground">
-              {t.propertyDetail.rawFileDesc}
+            <p className="font-mono text-eyebrow uppercase text-muted-foreground">
+              {t.propertyDetail.needRawFile}
             </p>
+            <p className="mt-3 text-sm text-muted-foreground">{t.propertyDetail.rawFileDesc}</p>
             <Link
               href="/contact"
               className="mt-4 inline-block font-mono text-[0.68rem] uppercase tracking-[0.14em] text-primary hover:underline"
@@ -250,7 +285,10 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
 
       <section className="border-t border-border bg-surface py-16">
         <div className="container">
-          <SectionHeading eyebrow={isEs ? 'Inmuebles comparables' : 'Comparable records'} title={t.propertyDetail.comparableRecords} />
+          <SectionHeading
+            eyebrow={isEs ? 'Inmuebles comparables' : 'Comparable records'}
+            title={t.propertyDetail.comparableRecords}
+          />
           <PropertyGrid properties={similar} className="mt-10" />
         </div>
       </section>

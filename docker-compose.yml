@@ -64,13 +64,28 @@ services:
     restart: unless-stopped
     ports:
       - '80:80'
-      # - '443:443'   # uncomment once TLS certs are mounted
+      # - '443:443'   # uncomment once TLS certs are mounted — see README "Enabling HTTPS"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - uploads:/usr/share/nginx/uploads:ro
+      - certbot-etc:/etc/letsencrypt:ro
+      - certbot-webroot:/var/www/certbot:ro
     depends_on:
       - web
+
+  # One-off: requests/renews the Let's Encrypt certificate via the HTTP-01
+  # webroot challenge nginx.conf already serves at /.well-known/acme-challenge.
+  # See README "Enabling HTTPS" for the exact command (needs a real domain
+  # pointed at the VPS first) and the cron line that keeps it renewed.
+  certbot:
+    profiles: ['full']
+    image: certbot/certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-webroot:/var/www/certbot
 
 volumes:
   postgres_data:
   uploads:
+  certbot-etc:
+  certbot-webroot:

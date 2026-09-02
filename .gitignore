@@ -16,3 +16,7 @@ src/generated/prisma
 
 # local uploads volume (dev only — prod uses the docker volume)
 /uploads
+
+# Postgres dumps written by scripts/backup-db.sh — copy these off-server,
+# never commit them (they contain client PII).
+/backups
