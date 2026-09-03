@@ -4,7 +4,7 @@ import * as React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Ruler } from 'lucide-react';
-import { cities } from '@/data/reference';
+import { cuencaSectors } from '@/data/reference';
 import { unsplash } from '@/data/images';
 import { useTranslation } from '@/i18n/context';
 import { SmartImage } from '@/components/shared/smart-image';
@@ -126,22 +126,40 @@ export function Hero() {
           </motion.div>
         </div>
 
-        <HeroSearch className="relative z-20 mt-12 lg:-mt-6" />
+        <HeroSearch className="relative z-20 mt-10 lg:mt-12" />
       </div>
 
-      {/* City marquee doubles as a shortcut row */}
-      <div className="mt-14 overflow-hidden border-y border-border py-4">
-        <div className="flex w-max animate-marquee gap-10 pr-10">
-          {[...cities, ...cities].map((city, index) => (
-            <Link
-              key={`${city.slug}-${index}`}
-              href={`/properties?city=${city.slug}`}
-              className="inline-flex items-center gap-3 font-mono text-[0.7rem] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <span className="size-1 rounded-full bg-brass" />
-              {city.name}, {city.state}
-            </Link>
-          ))}
+      {/* Cuenca sectors marquee with clear operation note */}
+      <div className="mt-14 border-y border-border bg-surface/50 py-3.5">
+        <div className="container mb-3 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+            </span>
+            <span className="font-mono text-[0.68rem] font-medium uppercase tracking-[0.14em] text-foreground">
+              {isEs ? 'Operando exclusivamente en Cuenca' : 'Operating exclusively in Cuenca'}
+            </span>
+          </div>
+          <span className="font-mono text-[0.65rem] uppercase tracking-[0.12em] text-muted-foreground">
+            {isEs
+              ? 'Sectores destacados · Expansión a más ciudades próximamente'
+              : 'Featured sectors · More cities coming soon'}
+          </span>
+        </div>
+        <div className="overflow-hidden">
+          <div className="flex w-max animate-marquee gap-10 pr-10">
+            {[...cuencaSectors, ...cuencaSectors].map((sector, index) => (
+              <Link
+                key={`${sector.slug}-${index}`}
+                href={`/properties?city=cuenca&q=${encodeURIComponent(sector.name)}`}
+                className="inline-flex items-center gap-3 font-mono text-[0.7rem] uppercase tracking-[0.2em] text-muted-foreground transition-colors hover:text-primary"
+              >
+                <span className="size-1 rounded-full bg-brass" />
+                {sector.name} · Cuenca
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </section>

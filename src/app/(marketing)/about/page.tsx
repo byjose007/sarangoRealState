@@ -4,7 +4,8 @@ import { AboutView } from '@/components/about/about-view';
 
 export const metadata = buildMetadata({
   title: 'About',
-  description: 'Vestra has measured 4,200 homes since 2009. Here is how the survey-first model works.',
+  description:
+    'Sarango Real Estate has measured 4,200 homes since 2009. Here is how the survey-first model works.',
   path: '/about',
 });
 

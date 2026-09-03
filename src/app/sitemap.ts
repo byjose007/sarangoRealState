@@ -2,7 +2,6 @@ import type { MetadataRoute } from 'next';
 import { siteConfig } from '@/constants/site';
 import { getPropertiesForSitemap } from '@/services/property-service';
 import { getAgentsForSitemap } from '@/services/agent-service';
-import { articles } from '@/data/articles';
 
 // Not ISR: this route has no dynamic params, so a Docker build (no DB
 // reachable at build time) would otherwise bake in an empty sitemap and
@@ -12,9 +11,22 @@ export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteConfig.url;
-  const staticRoutes = ['', '/properties', '/agents', '/blog', '/about', '/contact', '/compare', '/favorites'];
+  // '/blog' is intentionally excluded — it's still template journal content
+  // (see AGENTS.md / conversation), not published for the real business yet.
+  const staticRoutes = [
+    '',
+    '/properties',
+    '/agents',
+    '/about',
+    '/contact',
+    '/compare',
+    '/favorites',
+  ];
 
-  const [properties, agents] = await Promise.all([getPropertiesForSitemap(), getAgentsForSitemap()]);
+  const [properties, agents] = await Promise.all([
+    getPropertiesForSitemap(),
+    getAgentsForSitemap(),
+  ]);
 
   return [
     ...staticRoutes.map((route) => ({
@@ -32,12 +44,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...agents.map((agent) => ({
       url: `${base}/agents/${agent.slug}`,
       lastModified: agent.updatedAt,
-      changeFrequency: 'monthly' as const,
-      priority: 0.5,
-    })),
-    ...articles.map((article) => ({
-      url: `${base}/blog/${article.slug}`,
-      lastModified: new Date(article.publishedAt),
       changeFrequency: 'monthly' as const,
       priority: 0.5,
     })),

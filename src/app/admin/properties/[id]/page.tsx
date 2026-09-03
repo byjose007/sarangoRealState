@@ -41,33 +41,47 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
     energyRating: property.energyRating ?? '',
     featured: property.featured,
     amenityIds: property.amenityIds,
+    images: property.images.map((image) => image.url),
+    nearby: Array.isArray(property.nearby)
+      ? (property.nearby as { label: string; distance: number }[])
+      : [],
     videoUrl: property.videoUrl ?? '',
     tourUrl: property.tourUrl ?? '',
     hoaFee: property.hoaFee ? String(property.hoaFee) : '',
     propertyTax: String(property.propertyTax),
     agentId: property.agentId,
+    deposit: property.deposit ? String(property.deposit) : '',
+    leaseTerm: property.leaseTerm ?? '',
+    utilitiesIncluded:
+      property.utilitiesIncluded != null ? String(property.utilitiesIncluded) : 'none',
+    petsAllowed: property.petsAllowed != null ? String(property.petsAllowed) : 'none',
+    floorLevel: property.floorLevel ?? '',
+    commercialUse: property.commercialUse ?? '',
   };
 
   return (
     <div className="max-w-3xl space-y-10">
       <div>
-        <h1 className="text-headline text-2xl">{property.title}</h1>
+        <h1 className="text-2xl text-headline">{property.title}</h1>
         <p className="font-mono text-xs text-muted-foreground">{property.reference}</p>
       </div>
 
-      <PropertyForm propertyId={property.id} initialValues={initialValues} agentOptions={agentOptions} />
+      <PropertyForm
+        propertyId={property.id}
+        initialValues={initialValues}
+        agentOptions={agentOptions}
+      />
 
       <Separator />
 
       <div>
-        <h2 className="text-lg tracking-tight">Media</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Images and documents shown on the property page.</p>
+        <h2 className="text-lg tracking-tight">Documentos</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Planos, dossiers y otros archivos descargables mostrados en la ficha del inmueble. Las
+          fotos se gestionan arriba, en &quot;Fotografías y Galería&quot;.
+        </p>
         <div className="mt-4">
-          <MediaManager
-            propertyId={property.id}
-            images={property.images.map((image) => ({ id: image.id, url: image.url }))}
-            documents={property.documents}
-          />
+          <MediaManager propertyId={property.id} documents={property.documents} />
         </div>
       </div>
     </div>

@@ -10,7 +10,9 @@ function getTransporter() {
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT) || 587,
     secure: Number(process.env.SMTP_PORT) === 465,
-    auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+    auth: process.env.SMTP_USER
+      ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+      : undefined,
   });
   return transporter;
 }
@@ -34,7 +36,12 @@ export async function sendMail({ to, subject, text }: SendMailInput) {
   }
 
   try {
-    await client.sendMail({ from: process.env.SMTP_FROM || 'Vestra <notifications@vestra.estate>', to, subject, text });
+    await client.sendMail({
+      from: process.env.SMTP_FROM || 'Sarango Real Estate <notifications@vestra.estate>',
+      to,
+      subject,
+      text,
+    });
   } catch (error) {
     // Notification failures should never break the CRM action that triggered them.
     console.error('[mail] Failed to send email', error);

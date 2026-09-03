@@ -23,10 +23,26 @@ export function getMainNav(t?: TranslationDictionary): NavItem[] {
       href: '/properties?status=for-sale',
       mega: true,
       children: [
-        { label: t.nav.allHomesForSale, href: '/properties?status=for-sale', description: t.nav.allHomesForSaleDesc },
-        { label: t.nav.newDevelopments, href: '/properties?status=new-development', description: t.nav.newDevelopmentsDesc },
-        { label: t.nav.villasAndEstates, href: '/properties?types=villa', description: t.nav.villasAndEstatesDesc },
-        { label: t.nav.penthouses, href: '/properties?types=penthouse', description: t.nav.penthousesDesc },
+        {
+          label: t.nav.allHomesForSale,
+          href: '/properties?status=for-sale',
+          description: t.nav.allHomesForSaleDesc,
+        },
+        {
+          label: t.nav.newDevelopments,
+          href: '/properties?status=new-development',
+          description: t.nav.newDevelopmentsDesc,
+        },
+        {
+          label: t.nav.villasAndEstates,
+          href: '/properties?types=villa',
+          description: t.nav.villasAndEstatesDesc,
+        },
+        {
+          label: t.nav.penthouses,
+          href: '/properties?types=penthouse',
+          description: t.nav.penthousesDesc,
+        },
         { label: t.nav.compareListings, href: '/compare', description: t.nav.compareListingsDesc },
         { label: t.nav.savedHomes, href: '/favorites', description: t.nav.savedHomesDesc },
       ],
@@ -43,16 +59,6 @@ export function getMainNav(t?: TranslationDictionary): NavItem[] {
     {
       label: t.nav.agents,
       href: '/agents',
-    },
-    {
-      label: t.nav.journal,
-      href: '/blog',
-      children: [
-        { label: t.nav.marketReports, href: '/blog?category=market' },
-        { label: t.nav.buyingGuides, href: '/blog?category=buying' },
-        { label: t.nav.investment, href: '/blog?category=investment' },
-        { label: t.nav.design, href: '/blog?category=design' },
-      ],
     },
     {
       label: t.nav.studio,
@@ -83,33 +89,33 @@ export function getFooterNav(t?: TranslationDictionary) {
       links: [
         { label: t.footer.about, href: '/about' },
         { label: t.footer.ourAgents, href: '/agents' },
-        { label: t.nav.journal, href: '/blog' },
         { label: t.nav.contact, href: '/contact' },
         { label: t.footer.comingSoon, href: '/coming-soon' },
       ],
     },
     {
       title: t.footer.resources,
-      links: [
-        { label: t.footer.mortgageCalculator, href: '/properties' },
-        { label: t.footer.buyerGuide, href: '/blog?category=buying' },
-        { label: t.nav.marketReports, href: '/blog?category=market' },
-        { label: t.footer.investmentDesk, href: '/blog?category=investment' },
-      ],
+      links: [{ label: t.footer.mortgageCalculator, href: '/properties' }],
     },
   ];
 }
 
-export function getPropertyTypeOptions(t?: TranslationDictionary): { value: PropertyType; label: string }[] {
+export function getPropertyTypeOptions(
+  t?: TranslationDictionary,
+): { value: PropertyType; label: string }[] {
   if (!t) return propertyTypeOptions;
   return [
-    { value: 'villa', label: t.property.types.villa },
+    { value: 'house', label: t.property.types.house },
     { value: 'apartment', label: t.property.types.apartment },
-    { value: 'townhouse', label: t.property.types.townhouse },
-    { value: 'penthouse', label: t.property.types.penthouse },
-    { value: 'loft', label: t.property.types.loft },
+    { value: 'land', label: t.property.types.land },
     { value: 'estate', label: t.property.types.estate },
+    { value: 'studio', label: t.property.types.studio },
+    { value: 'penthouse', label: t.property.types.penthouse },
+    { value: 'townhouse', label: t.property.types.townhouse },
+    { value: 'commercial', label: t.property.types.commercial },
     { value: 'office', label: t.property.types.office },
+    { value: 'villa', label: t.property.types.villa },
+    { value: 'loft', label: t.property.types.loft },
   ];
 }
 
@@ -131,12 +137,36 @@ export const mainNav: NavItem[] = [
     href: '/properties?status=for-sale',
     mega: true,
     children: [
-      { label: 'Todas las viviendas en venta', href: '/properties?status=for-sale', description: 'Cada propiedad verificada y documentada en el mercado' },
-      { label: 'Obra nueva', href: '/properties?status=new-development', description: 'En construcción y primeros lanzamientos' },
-      { label: 'Villas y fincas', href: '/properties?types=villa', description: 'Casas unifamiliares con amplia parcela' },
-      { label: 'Áticos', href: '/properties?types=penthouse', description: 'Residencias en planta alta con terrazas' },
-      { label: 'Comparar propiedades', href: '/compare', description: 'Compara hasta cuatro viviendas cara a cara' },
-      { label: 'Viviendas guardadas', href: '/favorites', description: 'Tu lista de favoritos guardada en este dispositivo' },
+      {
+        label: 'Todas las viviendas en venta',
+        href: '/properties?status=for-sale',
+        description: 'Cada propiedad verificada y documentada en el mercado',
+      },
+      {
+        label: 'Obra nueva',
+        href: '/properties?status=new-development',
+        description: 'En construcción y primeros lanzamientos',
+      },
+      {
+        label: 'Villas y fincas',
+        href: '/properties?types=villa',
+        description: 'Casas unifamiliares con amplia parcela',
+      },
+      {
+        label: 'Áticos',
+        href: '/properties?types=penthouse',
+        description: 'Residencias en planta alta con terrazas',
+      },
+      {
+        label: 'Comparar propiedades',
+        href: '/compare',
+        description: 'Compara hasta cuatro viviendas cara a cara',
+      },
+      {
+        label: 'Viviendas guardadas',
+        href: '/favorites',
+        description: 'Tu lista de favoritos guardada en este dispositivo',
+      },
     ],
   },
   {
@@ -153,20 +183,10 @@ export const mainNav: NavItem[] = [
     href: '/agents',
   },
   {
-    label: 'Revista',
-    href: '/blog',
-    children: [
-      { label: 'Informes de mercado', href: '/blog?category=market' },
-      { label: 'Guías de compra', href: '/blog?category=buying' },
-      { label: 'Inversión', href: '/blog?category=investment' },
-      { label: 'Diseño y arquitectura', href: '/blog?category=design' },
-    ],
-  },
-  {
     label: 'Estudio',
     href: '/about',
     children: [
-      { label: 'Sobre Vestra', href: '/about' },
+      { label: 'Sobre Sarango Real Estate', href: '/about' },
       { label: 'Contacto', href: '/contact' },
     ],
   },
@@ -188,30 +208,28 @@ export const footerNav = [
     links: [
       { label: 'Nosotros', href: '/about' },
       { label: 'Nuestros agentes', href: '/agents' },
-      { label: 'Revista', href: '/blog' },
       { label: 'Contacto', href: '/contact' },
       { label: 'Próximamente', href: '/coming-soon' },
     ],
   },
   {
     title: 'Recursos',
-    links: [
-      { label: 'Calculadora de hipotecas', href: '/properties' },
-      { label: 'Guía del comprador', href: '/blog?category=buying' },
-      { label: 'Informes de mercado', href: '/blog?category=market' },
-      { label: 'Mesa de inversión', href: '/blog?category=investment' },
-    ],
+    links: [{ label: 'Calculadora de hipotecas', href: '/properties' }],
   },
 ];
 
 export const propertyTypeOptions: { value: PropertyType; label: string }[] = [
-  { value: 'villa', label: 'Villa' },
-  { value: 'apartment', label: 'Apartamento' },
-  { value: 'townhouse', label: 'Adosado' },
-  { value: 'penthouse', label: 'Ático' },
-  { value: 'loft', label: 'Loft' },
-  { value: 'estate', label: 'Finca' },
+  { value: 'house', label: 'Casa' },
+  { value: 'apartment', label: 'Departamento' },
+  { value: 'land', label: 'Terreno / Lote' },
+  { value: 'estate', label: 'Finca / Quinta' },
+  { value: 'studio', label: 'Suite / Estudio' },
+  { value: 'penthouse', label: 'Ático / Penthouse' },
+  { value: 'townhouse', label: 'Casa en conjunto' },
+  { value: 'commercial', label: 'Local comercial' },
   { value: 'office', label: 'Oficina' },
+  { value: 'villa', label: 'Villa' },
+  { value: 'loft', label: 'Loft' },
 ];
 
 export const sortOptions = [

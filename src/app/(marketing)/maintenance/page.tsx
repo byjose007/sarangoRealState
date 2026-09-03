@@ -4,7 +4,7 @@ import { buildMetadata } from '@/lib/seo';
 
 export const metadata = buildMetadata({
   title: 'Scheduled maintenance',
-  description: 'The Vestra catalogue is briefly offline for scheduled maintenance.',
+  description: 'The Sarango Real Estate catalogue is briefly offline for scheduled maintenance.',
   path: '/maintenance',
 });
 
@@ -15,7 +15,7 @@ export default function MaintenancePage() {
         <Wrench className="size-6" />
       </span>
       <span className="eyebrow mt-8">Back within the hour</span>
-      <h1 className="mt-5 max-w-2xl text-headline balance">
+      <h1 className="balance mt-5 max-w-2xl text-headline">
         We are re-indexing the survey archive
       </h1>
       <p className="mt-4 max-w-md text-muted-foreground">

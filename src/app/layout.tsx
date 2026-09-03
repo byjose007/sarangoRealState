@@ -29,9 +29,7 @@ export const metadata: Metadata = {
       { url: '/images/logo-sarango-real.jpeg', type: 'image/jpeg' },
     ],
     shortcut: ['/images/logo-sarango-real.jpeg'],
-    apple: [
-      { url: '/images/logo-sarango-real.jpeg', type: 'image/jpeg' },
-    ],
+    apple: [{ url: '/images/logo-sarango-real.jpeg', type: 'image/jpeg' }],
   },
 };
 
@@ -44,7 +42,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang="es" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

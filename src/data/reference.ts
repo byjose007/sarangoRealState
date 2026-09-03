@@ -10,8 +10,11 @@ export const cities: City[] = [
     country: 'Ecuador',
     image: unsplash(2, 900, 1100),
     coordinates: { lat: -2.9001, lng: -79.0059 },
-    blurb: 'Centro histórico colonial, exclusivas residencias y desarrollos de alta calidad.',
-    blurbEn: 'Colonial old town, exclusive residences and high-quality developments.',
+    blurb:
+      'Sede principal de Sarango Real Estate. Centro histórico colonial, exclusivas residencias y desarrollos de alta calidad.',
+    blurbEn:
+      'Headquarters of Sarango Real Estate. Colonial old town, exclusive residences and high-quality developments.',
+    status: 'active',
   },
   {
     id: 'c-quito',
@@ -25,6 +28,7 @@ export const cities: City[] = [
       'Capital andina con barrios patrimoniales y proyectos residenciales en plena expansión al norte.',
     blurbEn:
       'Andean capital with heritage neighbourhoods and residential projects expanding to the north.',
+    status: 'upcoming',
   },
   {
     id: 'c-guayaquil',
@@ -38,6 +42,7 @@ export const cities: City[] = [
       'Principal puerto y motor económico del país, con torres frente al Malecón y nuevos desarrollos en Vía a la Costa.',
     blurbEn:
       "Ecuador's main port and economic engine, with towers along the Malecón and new developments on Vía a la Costa.",
+    status: 'upcoming',
   },
   {
     id: 'c-samborondon',
@@ -51,6 +56,7 @@ export const cities: City[] = [
       'Urbanizaciones cerradas y residencias de alto nivel junto a Guayaquil, referente del segmento premium.',
     blurbEn:
       'Gated communities and high-end residences next to Guayaquil, the benchmark for the premium segment.',
+    status: 'upcoming',
   },
   {
     id: 'c-manta',
@@ -63,6 +69,7 @@ export const cities: City[] = [
     blurb:
       'Costa del Pacífico con proyectos frente al mar y una demanda creciente de segunda vivienda.',
     blurbEn: 'Pacific coastline with beachfront projects and growing demand for second homes.',
+    status: 'upcoming',
   },
   {
     id: 'c-salinas',
@@ -75,6 +82,7 @@ export const cities: City[] = [
     blurb:
       'Balneario y destino de segunda residencia, con condominios frente a la playa muy cotizados.',
     blurbEn: 'Beach resort and second-home destination, with sought-after beachfront condominiums.',
+    status: 'upcoming',
   },
   {
     id: 'c-ambato',
@@ -88,6 +96,7 @@ export const cities: City[] = [
       'Centro comercial de la sierra centro, con barrios residenciales consolidados y buena plusvalía.',
     blurbEn:
       'Commercial hub of the central highlands, with established residential neighbourhoods and solid appreciation.',
+    status: 'upcoming',
   },
   {
     id: 'c-ibarra',
@@ -101,6 +110,7 @@ export const cities: City[] = [
       'La ciudad blanca del norte, con propiedades coloniales y desarrollos familiares en expansión.',
     blurbEn:
       'The White City of the north, with colonial properties and growing family developments.',
+    status: 'upcoming',
   },
   {
     id: 'c-riobamba',
@@ -114,6 +124,7 @@ export const cities: City[] = [
       'Corazón de la sierra central, con vistas al Chimborazo y un mercado residencial accesible.',
     blurbEn:
       'Heart of the central highlands, with views of Chimborazo and an accessible residential market.',
+    status: 'upcoming',
   },
   {
     id: 'c-loja',
@@ -127,67 +138,174 @@ export const cities: City[] = [
       'Ciudad universitaria y cultural del sur, con un mercado residencial estable y en crecimiento sostenido.',
     blurbEn:
       'University and cultural city in the south, with a stable, steadily growing residential market.',
+    status: 'upcoming',
+  },
+];
+
+export const activeCity = cities[0];
+export const activeCities = cities.filter((c) => c.status === 'active');
+export const upcomingCities = cities.filter((c) => c.status === 'upcoming');
+
+export interface Sector {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+}
+
+export const cuencaSectors: Sector[] = [
+  {
+    id: 'sec-centro',
+    name: 'Centro Histórico',
+    slug: 'centro-historico',
+    description: 'Zona colonial, museos y comercio tradicional',
+  },
+  {
+    id: 'sec-challuabamba',
+    name: 'Challuabamba',
+    slug: 'challuabamba',
+    description: 'Residencial campestre, clima cálido y quintas exclusivas',
+  },
+  {
+    id: 'sec-puertas-sol',
+    name: 'Puertas del Sol',
+    slug: 'puertas-del-sol',
+    description: 'Sector residencial junto al Río Tomebamba',
+  },
+  {
+    id: 'sec-ordonez-lasso',
+    name: 'Av. Ordóñez Lasso',
+    slug: 'ordonez-lasso',
+    description: 'Edificios modernos y alta plusvalía',
+  },
+  {
+    id: 'sec-san-joaquin',
+    name: 'San Joaquín',
+    slug: 'san-joaquin',
+    description: 'Villas campestres, gastronomía y aire puro',
+  },
+  {
+    id: 'sec-el-vergel',
+    name: 'El Vergel / Av. Solano',
+    slug: 'el-vergel-solano',
+    description: 'Sector tradicional residencial consolidado',
+  },
+  {
+    id: 'sec-totoracocha',
+    name: 'Totoracocha',
+    slug: 'totoracocha',
+    description: 'Zona dinámica con parques y equipamiento comercial',
+  },
+  {
+    id: 'sec-parque-industrial',
+    name: 'Sector Parque Industrial',
+    slug: 'parque-industrial',
+    description: 'Polo empresarial, comercial y corporativo',
+  },
+  {
+    id: 'sec-misicata',
+    name: 'Misicata / Baños',
+    slug: 'misicata-banos',
+    description: 'Vistas panorámicas a la ciudad y tranquilidad',
+  },
+  {
+    id: 'sec-yanuncay',
+    name: 'Río Yanuncay / 1ro de Mayo',
+    slug: 'yanuncay',
+    description: 'Paseos fluviales, áreas verdes y condominios modernos',
+  },
+  {
+    id: 'sec-ricaurte',
+    name: 'Ricaurte',
+    slug: 'ricaurte',
+    description: 'Entorno familiar suburbano y fácil conectividad',
+  },
+  {
+    id: 'sec-mayancela',
+    name: 'San Vicente de Mayancela',
+    slug: 'mayancela',
+    description: 'Sector residencial en auge a 5 min del Parque Industrial',
   },
 ];
 
 export const amenities: Amenity[] = [
-  { id: 'a1', label: 'Air conditioning', icon: 'Wind', group: 'indoor' },
-  { id: 'a2', label: 'Underfloor heating', icon: 'Thermometer', group: 'indoor' },
-  { id: 'a3', label: 'Fireplace', icon: 'Flame', group: 'indoor' },
-  { id: 'a4', label: 'Walk-in closet', icon: 'Shirt', group: 'indoor' },
-  { id: 'a5', label: 'Chef kitchen', icon: 'ChefHat', group: 'indoor' },
-  { id: 'a6', label: 'Home office', icon: 'Laptop', group: 'indoor' },
-  { id: 'a7', label: 'Wine cellar', icon: 'Wine', group: 'indoor' },
-  { id: 'a8', label: 'Laundry room', icon: 'WashingMachine', group: 'indoor' },
-  { id: 'a9', label: 'Private pool', icon: 'Waves', group: 'outdoor' },
-  { id: 'a10', label: 'Garden', icon: 'Trees', group: 'outdoor' },
-  { id: 'a11', label: 'Roof terrace', icon: 'Sun', group: 'outdoor' },
-  { id: 'a12', label: 'Outdoor kitchen', icon: 'Utensils', group: 'outdoor' },
-  { id: 'a13', label: 'Covered parking', icon: 'Car', group: 'building' },
-  { id: 'a14', label: 'Elevator', icon: 'MoveVertical', group: 'building' },
-  { id: 'a15', label: 'Concierge', icon: 'BellRing', group: 'building' },
-  { id: 'a16', label: 'Fitness room', icon: 'Dumbbell', group: 'building' },
-  { id: 'a17', label: 'Pet friendly', icon: 'PawPrint', group: 'building' },
-  { id: 'a18', label: 'Storage unit', icon: 'Package', group: 'building' },
-  { id: 'a19', label: 'Solar panels', icon: 'SunMedium', group: 'utility' },
-  { id: 'a20', label: 'EV charger', icon: 'Zap', group: 'utility' },
-  { id: 'a21', label: 'Fibre internet', icon: 'Wifi', group: 'utility' },
-  { id: 'a22', label: 'Smart home', icon: 'Cpu', group: 'utility' },
-  { id: 'a23', label: 'Security system', icon: 'ShieldCheck', group: 'utility' },
-  { id: 'a24', label: 'Water softener', icon: 'Droplets', group: 'utility' },
+  { id: 'a1', label: 'Aire acondicionado', icon: 'Wind', group: 'indoor' },
+  { id: 'a2', label: 'Calefacción / Climatización', icon: 'Thermometer', group: 'indoor' },
+  { id: 'a3', label: 'Chimenea', icon: 'Flame', group: 'indoor' },
+  { id: 'a4', label: 'Walk-in closet / Vestidor', icon: 'Shirt', group: 'indoor' },
+  { id: 'a5', label: 'Cocina equipada / De diseño', icon: 'ChefHat', group: 'indoor' },
+  { id: 'a6', label: 'Estudio / Oficina en casa', icon: 'Laptop', group: 'indoor' },
+  { id: 'a7', label: 'Cava de vinos', icon: 'Wine', group: 'indoor' },
+  { id: 'a8', label: 'Área de lavandería', icon: 'WashingMachine', group: 'indoor' },
+  { id: 'a9', label: 'Piscina privada', icon: 'Waves', group: 'outdoor' },
+  { id: 'a10', label: 'Jardín / Patio privado', icon: 'Trees', group: 'outdoor' },
+  { id: 'a11', label: 'Terraza / Roof garden', icon: 'Sun', group: 'outdoor' },
+  { id: 'a12', label: 'Área de BBQ / Asador', icon: 'Utensils', group: 'outdoor' },
+  { id: 'a13', label: 'Parqueadero cubierto', icon: 'Car', group: 'building' },
+  { id: 'a14', label: 'Ascensor', icon: 'MoveVertical', group: 'building' },
+  { id: 'a15', label: 'Guardianía 24/7 / Seguridad', icon: 'BellRing', group: 'building' },
+  { id: 'a16', label: 'Gimnasio', icon: 'Dumbbell', group: 'building' },
+  { id: 'a17', label: 'Pet friendly / Admite mascotas', icon: 'PawPrint', group: 'building' },
+  { id: 'a18', label: 'Bodega privada', icon: 'Package', group: 'building' },
+  { id: 'a19', label: 'Paneles solares', icon: 'SunMedium', group: 'utility' },
+  { id: 'a20', label: 'Cargador de auto eléctrico', icon: 'Zap', group: 'utility' },
+  { id: 'a21', label: 'Internet fibra óptica', icon: 'Wifi', group: 'utility' },
+  { id: 'a22', label: 'Domótica / Smart home', icon: 'Cpu', group: 'utility' },
+  { id: 'a23', label: 'Sistema de seguridad / Alarma', icon: 'ShieldCheck', group: 'utility' },
+  { id: 'a24', label: 'Cisterna / Bomba de agua', icon: 'Droplets', group: 'utility' },
+  {
+    id: 'a25',
+    label: 'Conexiones para lavadora y secadora (gas o eléctrica)',
+    icon: 'WashingMachine',
+    group: 'utility',
+  },
+  { id: 'a26', label: 'Servicios básicos incluidos', icon: 'Droplets', group: 'utility' },
+  { id: 'a27', label: 'Planta libre / Espacio adaptable', icon: 'LayoutGrid', group: 'indoor' },
+  { id: 'a28', label: 'Energía trifásica / Alta potencia', icon: 'Zap', group: 'utility' },
+  {
+    id: 'a29',
+    label: 'Apto para oficinas / corporativo / coworking',
+    icon: 'Briefcase',
+    group: 'building',
+  },
 ];
 
 export function getAmenities(isEs: boolean = true): Amenity[] {
-  if (!isEs) return amenities;
-  const esLabels: Record<string, string> = {
-    a1: 'Aire acondicionado',
-    a2: 'Suelo radiante',
-    a3: 'Chimenea',
-    a4: 'Vestidor',
-    a5: 'Cocina de diseño',
-    a6: 'Despacho / Oficina',
-    a7: 'Bodega',
-    a8: 'Zona de lavandería',
-    a9: 'Piscina privada',
-    a10: 'Jardín',
-    a11: 'Terraza en cubierta',
-    a12: 'Cocina exterior',
-    a13: 'Aparcamiento cubierto',
-    a14: 'Ascensor',
-    a15: 'Conserjería',
-    a16: 'Gimnasio',
-    a17: 'Admite mascotas',
-    a18: 'Trastero',
-    a19: 'Paneles solares',
-    a20: 'Cargador coche eléctrico',
-    a21: 'Fibra óptica',
-    a22: 'Domótica',
-    a23: 'Sistema de seguridad',
-    a24: 'Descalcificador de agua',
+  if (isEs) return amenities;
+  const enLabels: Record<string, string> = {
+    a1: 'Air conditioning',
+    a2: 'Underfloor heating / Climate control',
+    a3: 'Fireplace',
+    a4: 'Walk-in closet',
+    a5: 'Chef kitchen',
+    a6: 'Home office / Study',
+    a7: 'Wine cellar',
+    a8: 'Laundry room',
+    a9: 'Private pool',
+    a10: 'Private garden / Yard',
+    a11: 'Roof terrace',
+    a12: 'Outdoor BBQ area',
+    a13: 'Covered parking',
+    a14: 'Elevator',
+    a15: '24/7 Security / Concierge',
+    a16: 'Fitness room',
+    a17: 'Pet friendly',
+    a18: 'Storage unit',
+    a19: 'Solar panels',
+    a20: 'EV charger',
+    a21: 'Fibre internet',
+    a22: 'Smart home automation',
+    a23: 'Security alarm system',
+    a24: 'Water cistern / backup pump',
+    a25: 'Washer and dryer hookups',
+    a26: 'Basic utilities included',
+    a27: 'Open-plan / adaptable layout',
+    a28: 'Three-phase electrical power',
+    a29: 'Suitable for offices / corporate / coworking',
   };
   return amenities.map((item) => ({
     ...item,
-    label: esLabels[item.id] || item.label,
+    label: enLabels[item.id] || item.label,
   }));
 }
 
@@ -228,7 +346,7 @@ export const testimonialsEs: Testimonial[] = [
     location: 'Samborondón, Guayas',
     avatar: avatar(33),
     quote:
-      'Alquilo dos viviendas a través de Vestra. Las liquidaciones llegan puntuales el día 2 de cada mes y el tiempo de desocupación ha sido inferior a una semana.',
+      'Alquilo dos viviendas a través de Sarango Real Estate. Las liquidaciones llegan puntuales el día 2 de cada mes y el tiempo de desocupación ha sido inferior a una semana.',
     rating: 5,
     dealType: 'Inversor · 2 unidades gestionadas',
   },
@@ -291,7 +409,7 @@ export const testimonialsEn: Testimonial[] = [
     location: 'Samborondón, Guayas',
     avatar: avatar(33),
     quote:
-      'I rent out two units through Vestra. Statements arrive on the second of the month and the vacancy gap has been under a week.',
+      'I rent out two units through Sarango Real Estate. Statements arrive on the second of the month and the vacancy gap has been under a week.',
     rating: 5,
     dealType: 'Investor · 2 units managed',
   },
@@ -336,7 +454,7 @@ export const partners = [
 
 export const faqsEs = [
   {
-    question: '¿Qué incluye exactamente una auditoría Vestra?',
+    question: '¿Qué incluye exactamente una auditoría Sarango Real Estate?',
     answer:
       'Un plano medido de cada planta, registro fotográfico de cada estancia, lecturas de consumos y eficiencias, y notas técnicas de transparencia sobre cualquier reforma o detalle técnico.',
   },
@@ -369,7 +487,7 @@ export const faqsEs = [
 
 export const faqsEn = [
   {
-    question: 'What does a Vestra survey actually include?',
+    question: 'What does a Sarango Real Estate survey actually include?',
     answer:
       'A measured floor plan of every level, a photographic record of each room, utility and energy readings, and a note of anything we would want disclosed if we were buying.',
   },

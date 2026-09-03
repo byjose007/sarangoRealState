@@ -46,9 +46,17 @@ export function Pillars() {
   return (
     <section className="container py-20 lg:py-28">
       <SectionHeading
-        eyebrow={isEs ? 'Por qué Vestra' : 'Why Vestra'}
-        title={isEs ? 'La evidencia primero. El marketing es secundario.' : 'The record comes first. The pitch is optional.'}
-        lede={isEs ? 'Los cuatro compromisos que definen cada propiedad que publicamos y cada oferta que asesoramos.' : 'Four commitments that shape every listing we publish and every offer we advise on.'}
+        eyebrow={isEs ? 'Por qué Sarango Real Estate' : 'Why Sarango Real Estate'}
+        title={
+          isEs
+            ? 'La evidencia primero. El marketing es secundario.'
+            : 'The record comes first. The pitch is optional.'
+        }
+        lede={
+          isEs
+            ? 'Los cuatro compromisos que definen cada propiedad que publicamos y cada oferta que asesoramos.'
+            : 'Four commitments that shape every listing we publish and every offer we advise on.'
+        }
       />
 
       <div className="mt-14 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">

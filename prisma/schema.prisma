@@ -27,13 +27,17 @@ enum ListingStatus {
 }
 
 enum PropertyType {
-  VILLA
+  HOUSE
   APARTMENT
-  TOWNHOUSE
-  PENTHOUSE
-  LOFT
+  LAND
   ESTATE
+  STUDIO
+  PENTHOUSE
+  TOWNHOUSE
+  COMMERCIAL
   OFFICE
+  VILLA
+  LOFT
 }
 
 enum PricePeriod {
@@ -165,12 +169,18 @@ model Property {
   videoUrl     String?
   tourUrl      String?
   views        Int           @default(0)
-  hoaFee       Int?
-  propertyTax  Int           @default(0)
-  nearby       Json          @default("[]")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  deletedAt    DateTime?
+  hoaFee            Int?
+  propertyTax       Int           @default(0)
+  nearby            Json          @default("[]")
+  deposit           Int?
+  leaseTerm         String?
+  utilitiesIncluded Boolean?
+  petsAllowed       Boolean?
+  floorLevel        String?
+  commercialUse     String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  deletedAt         DateTime?
 
   agent        Agent              @relation(fields: [agentId], references: [id])
   agentId      String

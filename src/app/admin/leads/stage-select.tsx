@@ -5,11 +5,21 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Select } from '@/components/ui/input';
 import { updateLeadStageAction } from '@/actions/lead-pipeline';
-import { STAGE_LABELS, STAGE_ORDER } from '@/lib/admin/labels';
+import { STAGE_ORDER, getStageLabel } from '@/lib/admin/labels';
+import { useTranslation } from '@/i18n/context';
 
-export function StageSelect({ leadId, stage, className }: { leadId: string; stage: string; className?: string }) {
+export function StageSelect({
+  leadId,
+  stage,
+  className,
+}: {
+  leadId: string;
+  stage: string;
+  className?: string;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const { language } = useTranslation();
 
   function onChange(nextStage: string) {
     if (nextStage === stage) return;
@@ -33,7 +43,7 @@ export function StageSelect({ leadId, stage, className }: { leadId: string; stag
     >
       {STAGE_ORDER.map((value) => (
         <option key={value} value={value}>
-          {STAGE_LABELS[value]}
+          {getStageLabel(value, language)}
         </option>
       ))}
     </Select>

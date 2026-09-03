@@ -17,13 +17,17 @@ const STATUS_MAP: Record<ListingStatus, 'FOR_SALE' | 'FOR_RENT' | 'SOLD' | 'NEW_
 };
 
 const TYPE_MAP: Record<FrontendPropertyType, string> = {
-  villa: 'VILLA',
+  house: 'HOUSE',
   apartment: 'APARTMENT',
-  townhouse: 'TOWNHOUSE',
-  penthouse: 'PENTHOUSE',
-  loft: 'LOFT',
+  land: 'LAND',
   estate: 'ESTATE',
+  studio: 'STUDIO',
+  penthouse: 'PENTHOUSE',
+  townhouse: 'TOWNHOUSE',
+  commercial: 'COMMERCIAL',
   office: 'OFFICE',
+  villa: 'VILLA',
+  loft: 'LOFT',
 };
 
 const PRICE_PERIOD_MAP: Record<Property['pricePeriod'], 'MONTH' | 'TOTAL'> = {
@@ -155,6 +159,12 @@ async function main() {
         hoaFee: property.hoaFee,
         propertyTax: property.propertyTax,
         nearby: property.nearby,
+        deposit: property.deposit,
+        leaseTerm: property.leaseTerm,
+        utilitiesIncluded: property.utilitiesIncluded,
+        petsAllowed: property.petsAllowed,
+        floorLevel: property.floorLevel,
+        commercialUse: property.commercialUse,
         createdAt: new Date(property.createdAt),
         agentId,
         images: {

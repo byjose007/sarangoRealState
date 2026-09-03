@@ -30,8 +30,10 @@ export function AboutView({ agents }: AboutViewProps) {
         <Breadcrumb items={[{ label: t.footer.about }]} />
         <div className="mt-8 grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-end">
           <div>
-            <span className="eyebrow">{isEs ? `Desde ${siteConfig.founded}` : `Since ${siteConfig.founded}`}</span>
-            <h1 className="mt-5 text-headline balance">
+            <span className="eyebrow">
+              {isEs ? `Desde ${siteConfig.founded}` : `Since ${siteConfig.founded}`}
+            </span>
+            <h1 className="balance mt-5 text-headline">
               {isEs ? 'Empezamos con una cinta métrica' : 'We started with a tape measure'}
               <span className="block italic text-primary">
                 {isEs ? 'y nunca la dejamos.' : 'and never put it down.'}
@@ -40,13 +42,20 @@ export function AboutView({ agents }: AboutViewProps) {
           </div>
           <p className="text-muted-foreground">
             {isEs
-              ? 'Vestra nació con un principio claro: las propiedades se deben medir y certificar con hechos antes de publicarse. La evidencia va primero; el marketing, después.'
-              : 'Vestra was built on a simple frustration: property listings describe a feeling and hide a fact. We flipped it. The survey comes first, the marketing second, and if the two ever disagree the survey wins.'}
+              ? 'Sarango Real Estate nació con un principio claro: las propiedades se deben medir y certificar con hechos antes de publicarse. La evidencia va primero; el marketing, después.'
+              : 'Sarango Real Estate was built on a simple frustration: property listings describe a feeling and hide a fact. We flipped it. The survey comes first, the marketing second, and if the two ever disagree the survey wins.'}
           </p>
         </div>
 
         <div className="tick-frame relative mt-12 aspect-[16/7] overflow-hidden rounded-xl">
-          <SmartImage src={unsplash(6, 1600, 700)} alt="A Vestra survey in progress" fill priority sizes="100vw" fallbackSeed="about" />
+          <SmartImage
+            src={unsplash(6, 1600, 700)}
+            alt="A Sarango Real Estate survey in progress"
+            fill
+            priority
+            sizes="100vw"
+            fallbackSeed="about"
+          />
         </div>
       </header>
 
@@ -74,8 +83,10 @@ export function AboutView({ agents }: AboutViewProps) {
         <div className="grid gap-12 lg:grid-cols-2">
           <Reveal>
             <span className="eyebrow">{isEs ? 'Misión' : 'Mission'}</span>
-            <h2 className="mt-4 text-headline balance">
-              {isEs ? 'Publicar la evidencia antes del precio' : 'Make the record public before the price'}
+            <h2 className="balance mt-4 text-headline">
+              {isEs
+                ? 'Publicar la evidencia antes del precio'
+                : 'Make the record public before the price'}
             </h2>
             <p className="mt-5 text-muted-foreground">
               {isEs
@@ -85,7 +96,7 @@ export function AboutView({ agents }: AboutViewProps) {
           </Reveal>
           <Reveal delay={0.1}>
             <span className="eyebrow">{isEs ? 'Visión' : 'Vision'}</span>
-            <h2 className="mt-4 text-headline balance">
+            <h2 className="balance mt-4 text-headline">
               {isEs ? 'Un mercado basado en datos reales' : 'A market that argues about facts'}
             </h2>
             <p className="mt-5 text-muted-foreground">

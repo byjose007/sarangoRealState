@@ -62,6 +62,56 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
     [t.propertyDetail.bedrooms, String(property.bedrooms || '—')],
     [t.propertyDetail.bathrooms, String(property.bathrooms)],
     [t.propertyDetail.garages, String(property.garages || '—')],
+    ...(property.floorLevel
+      ? [[isEs ? 'Nivel / Pisos' : 'Floor level', property.floorLevel] as [string, string]]
+      : []),
+    ...(property.deposit
+      ? [
+          [isEs ? 'Garantía' : 'Security deposit', formatPrice(property.deposit)] as [
+            string,
+            string,
+          ],
+        ]
+      : []),
+    ...(property.leaseTerm
+      ? [[isEs ? 'Contrato mínimo' : 'Min. lease term', property.leaseTerm] as [string, string]]
+      : []),
+    ...(property.utilitiesIncluded !== undefined
+      ? [
+          [
+            isEs ? 'Servicios básicos' : 'Utilities',
+            property.utilitiesIncluded
+              ? isEs
+                ? 'Incluidos en el canon 💧'
+                : 'Included in rent'
+              : isEs
+                ? 'Por cuenta del inquilino'
+                : 'Separate / excluded',
+          ] as [string, string],
+        ]
+      : []),
+    ...(property.petsAllowed !== undefined
+      ? [
+          [
+            isEs ? 'Política de mascotas' : 'Pets policy',
+            property.petsAllowed
+              ? isEs
+                ? '🐾 Se admiten mascotas'
+                : 'Pets allowed'
+              : isEs
+                ? '🚫 No se aceptan mascotas'
+                : 'No pets allowed',
+          ] as [string, string],
+        ]
+      : []),
+    ...(property.commercialUse
+      ? [
+          [isEs ? 'Uso comercial / Ideal para' : 'Ideal use', property.commercialUse] as [
+            string,
+            string,
+          ],
+        ]
+      : []),
     [t.propertyDetail.propertyTax, property.propertyTax ? formatPrice(property.propertyTax) : '—'],
     [
       t.propertyDetail.hoaFee,
@@ -94,6 +144,32 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
                   {getStatusLabel(property.status, language)}
                 </Badge>
                 <Badge variant="outline">{getTypeLabel(property.type, language)}</Badge>
+                {property.floorLevel ? (
+                  <Badge variant="outline">{property.floorLevel}</Badge>
+                ) : null}
+                {property.petsAllowed === false ? (
+                  <Badge
+                    variant="outline"
+                    className="border-red-500/30 text-red-600 dark:text-red-400"
+                  >
+                    🚫 {isEs ? 'No mascotas' : 'No pets'}
+                  </Badge>
+                ) : property.petsAllowed === true ? (
+                  <Badge
+                    variant="outline"
+                    className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+                  >
+                    🐾 {isEs ? 'Pet friendly' : 'Pet friendly'}
+                  </Badge>
+                ) : null}
+                {property.utilitiesIncluded === true ? (
+                  <Badge
+                    variant="outline"
+                    className="border-blue-500/30 text-blue-600 dark:text-blue-400"
+                  >
+                    💧 {isEs ? 'Servicios incluidos' : 'Utilities included'}
+                  </Badge>
+                ) : null}
                 <Badge variant="soft">{t.propertyDetail.surveyComplete}</Badge>
               </div>
               <h1 className="balance mt-4 max-w-2xl text-headline">{property.title}</h1>
@@ -142,6 +218,110 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
                 </div>
               ))}
             </dl>
+
+            {property.status === 'for-rent' ? (
+              <div className="mt-8 overflow-hidden rounded-xl border border-brass/30 bg-surface/80 p-6 shadow-sm">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-4">
+                  <div>
+                    <h3 className="font-display text-xl tracking-tight text-foreground">
+                      {isEs ? 'Condiciones de Arriendo' : 'Rental Terms & Conditions'}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {isEs
+                        ? 'Resumen contractual y valores iniciales para el inquilino'
+                        : 'Contractual summary and move-in figures'}
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-brass/10 px-3 py-1 font-mono text-[0.68rem] font-semibold uppercase tracking-wider text-brass">
+                    {isEs ? 'Alquiler Mensual' : 'Monthly Lease'}
+                  </span>
+                </div>
+
+                <div className="mt-5 grid gap-4 sm:grid-cols-3">
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <p className="font-mono text-[0.65rem] uppercase tracking-wider text-muted-foreground">
+                      {isEs ? 'Canon Mensual' : 'Monthly Rent'}
+                    </p>
+                    <p className="mt-1 font-display text-2xl tracking-tight text-foreground">
+                      {formatPrice(property.price)}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {property.utilitiesIncluded === true
+                        ? isEs
+                          ? '💧 Incluye servicios básicos'
+                          : 'Includes utilities'
+                        : isEs
+                          ? 'Servicios por separado'
+                          : 'Utilities separate'}
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <p className="font-mono text-[0.65rem] uppercase tracking-wider text-muted-foreground">
+                      {isEs ? 'Garantía Requerida' : 'Security Deposit'}
+                    </p>
+                    <p className="mt-1 font-display text-2xl tracking-tight text-foreground">
+                      {property.deposit
+                        ? formatPrice(property.deposit)
+                        : formatPrice(property.price)}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {isEs ? 'Reembolsable al finalizar' : 'Refundable at lease end'}
+                    </p>
+                  </div>
+
+                  <div className="rounded-lg border border-border bg-card p-4">
+                    <p className="font-mono text-[0.65rem] uppercase tracking-wider text-muted-foreground">
+                      {isEs ? 'Total Ingreso Inicial' : 'Total Move-in Cost'}
+                    </p>
+                    <p className="mt-1 font-display text-2xl tracking-tight text-brass">
+                      {formatPrice(property.price + (property.deposit ?? property.price))}
+                    </p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {isEs ? '1er mes + garantía' : '1st month + deposit'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border pt-4 text-xs">
+                  <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                    <strong className="text-foreground">{isEs ? 'Contrato:' : 'Lease:'}</strong>{' '}
+                    {property.leaseTerm || (isEs ? 'Mínimo 1 año' : '1 year minimum')}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                    <strong className="text-foreground">{isEs ? 'Mascotas:' : 'Pets:'}</strong>{' '}
+                    {property.petsAllowed === false
+                      ? isEs
+                        ? '🚫 No se aceptan mascotas'
+                        : 'No pets allowed'
+                      : property.petsAllowed === true
+                        ? isEs
+                          ? '🐾 Se admiten mascotas'
+                          : 'Pets allowed'
+                        : isEs
+                          ? 'A consultar'
+                          : 'Inquire'}
+                  </span>
+                  {property.floorLevel ? (
+                    <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+                      <strong className="text-foreground">{isEs ? 'Nivel:' : 'Floor:'}</strong>{' '}
+                      {property.floorLevel}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+
+            {property.commercialUse ? (
+              <div className="mt-6 rounded-lg border border-border bg-card p-5">
+                <p className="font-mono text-[0.65rem] font-semibold uppercase tracking-wider text-brass">
+                  {isEs ? 'Aptitud Comercial / Ideal para:' : 'Recommended Commercial Use:'}
+                </p>
+                <p className="mt-1 text-base font-medium text-foreground">
+                  {property.commercialUse}
+                </p>
+              </div>
+            ) : null}
 
             <div className="mt-8 space-y-5">
               {property.description.split('\n\n').map((paragraph) => (

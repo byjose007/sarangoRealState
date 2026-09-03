@@ -43,7 +43,19 @@ export type CreateAgentInput = z.infer<typeof createAgentSchema>;
 export type UpdateAgentInput = z.infer<typeof updateAgentSchema>;
 
 const listingStatus = z.enum(['FOR_SALE', 'FOR_RENT', 'SOLD', 'NEW_DEVELOPMENT']);
-const propertyType = z.enum(['VILLA', 'APARTMENT', 'TOWNHOUSE', 'PENTHOUSE', 'LOFT', 'ESTATE', 'OFFICE']);
+const propertyType = z.enum([
+  'HOUSE',
+  'APARTMENT',
+  'LAND',
+  'ESTATE',
+  'STUDIO',
+  'PENTHOUSE',
+  'TOWNHOUSE',
+  'COMMERCIAL',
+  'OFFICE',
+  'VILLA',
+  'LOFT',
+]);
 const pricePeriod = z.enum(['MONTH', 'TOTAL']);
 const energyRating = z.enum(['A', 'B', 'C', 'D']);
 
@@ -74,14 +86,25 @@ export const propertyScalarSchema = z.object({
   hoaFee: z.coerce.number().int().optional(),
   propertyTax: z.coerce.number().int().min(0).default(0),
   nearby: z.array(z.object({ label: z.string(), distance: z.coerce.number() })).default([]),
+  deposit: z.coerce.number().int().min(0).optional(),
+  leaseTerm: z.string().optional().or(z.literal('')),
+  utilitiesIncluded: z.boolean().optional(),
+  petsAllowed: z.boolean().optional(),
+  floorLevel: z.string().optional().or(z.literal('')),
+  commercialUse: z.string().optional().or(z.literal('')),
 });
 
 export const createPropertySchema = propertyScalarSchema.extend({
   /** Required when the actor is ADMIN; ignored (forced to the actor's own agent) for AGENT. */
   agentId: z.string().min(1).optional(),
+  images: z.array(z.string()).default([]),
 });
 
-export const updatePropertySchema = propertyScalarSchema.partial();
+export const updatePropertySchema = propertyScalarSchema
+  .extend({
+    images: z.array(z.string()).optional(),
+  })
+  .partial();
 
 export type CreatePropertyInput = z.infer<typeof createPropertySchema>;
 export type UpdatePropertyInput = z.infer<typeof updatePropertySchema>;

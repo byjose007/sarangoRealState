@@ -27,7 +27,11 @@ export function formatArea(value: number, lang: Language = 'es') {
   return `${decimal.format(value)} sq ft`;
 }
 
-export function formatListingPrice(price: number, period: 'month' | 'total', lang: Language = 'es') {
+export function formatListingPrice(
+  price: number,
+  period: 'month' | 'total',
+  lang: Language = 'es',
+) {
   if (period === 'month') {
     return lang === 'es' ? `${currency.format(price)}/mes` : `${currency.format(price)}/mo`;
   }
@@ -79,23 +83,31 @@ export function getStatusLabel(status: string, lang: Language = 'es'): string {
 }
 
 export const typeLabelEs: Record<string, string> = {
-  villa: 'Villa',
-  apartment: 'Apartamento',
-  townhouse: 'Adosado',
-  penthouse: 'Ático',
-  loft: 'Loft',
-  estate: 'Finca',
+  house: 'Casa',
+  apartment: 'Departamento',
+  land: 'Terreno / Lote',
+  estate: 'Finca / Quinta',
+  studio: 'Suite / Estudio',
+  penthouse: 'Ático / Penthouse',
+  townhouse: 'Casa en conjunto',
+  commercial: 'Local comercial',
   office: 'Oficina',
+  villa: 'Villa',
+  loft: 'Loft',
 };
 
 export const typeLabelEn: Record<string, string> = {
-  villa: 'Villa',
+  house: 'House',
   apartment: 'Apartment',
-  townhouse: 'Townhouse',
+  land: 'Land / Lot',
+  estate: 'Estate / Country property',
+  studio: 'Studio / Suite',
   penthouse: 'Penthouse',
-  loft: 'Loft',
-  estate: 'Estate',
+  townhouse: 'Townhouse',
+  commercial: 'Commercial space',
   office: 'Office',
+  villa: 'Villa',
+  loft: 'Loft',
 };
 
 export function getTypeLabel(type: string, lang: Language = 'es'): string {

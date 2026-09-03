@@ -5,7 +5,17 @@
 export type ListingStatus = 'for-sale' | 'for-rent' | 'sold' | 'new-development';
 
 export type PropertyType =
-  'villa' | 'apartment' | 'townhouse' | 'penthouse' | 'loft' | 'estate' | 'office';
+  | 'house'
+  | 'apartment'
+  | 'land'
+  | 'estate'
+  | 'studio'
+  | 'penthouse'
+  | 'townhouse'
+  | 'commercial'
+  | 'office'
+  | 'villa'
+  | 'loft';
 
 export interface Coordinates {
   lat: number;
@@ -22,6 +32,7 @@ export interface City {
   coordinates: Coordinates;
   blurb: string;
   blurbEn: string;
+  status?: 'active' | 'upcoming';
 }
 
 export interface Amenity {
@@ -107,6 +118,12 @@ export interface Property {
   hoaFee?: number;
   propertyTax: number;
   nearby: { label: string; distance: number }[];
+  deposit?: number;
+  leaseTerm?: string;
+  utilitiesIncluded?: boolean;
+  petsAllowed?: boolean;
+  floorLevel?: string;
+  commercialUse?: string;
 }
 
 export interface Article {

@@ -3,7 +3,8 @@ import { ContactView } from '@/components/contact/contact-view';
 
 export const metadata = buildMetadata({
   title: 'Contact',
-  description: 'Three offices, one desk. Call, write or book a viewing with the Vestra team.',
+  description:
+    'Three offices, one desk. Call, write or book a viewing with the Sarango Real Estate team.',
   path: '/contact',
 });
 

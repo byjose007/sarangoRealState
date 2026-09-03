@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { RotateCcw } from 'lucide-react';
-import { cities, getAmenities } from '@/data/reference';
+import { upcomingCities, cuencaSectors, getAmenities } from '@/data/reference';
 import { getPropertyTypeOptions } from '@/constants/navigation';
 import { formatPrice } from '@/lib/format';
 import { useTranslation } from '@/i18n/context';
@@ -29,12 +29,20 @@ export function FilterSidebar({ className }: { className?: string }) {
 
   const toggleType = (value: string) => {
     const current = filters.types ?? [];
-    write({ types: current.includes(value as never) ? current.filter((item) => item !== value) : [...current, value] });
+    write({
+      types: current.includes(value as never)
+        ? current.filter((item) => item !== value)
+        : [...current, value],
+    });
   };
 
   const toggleAmenity = (value: string) => {
     const current = filters.amenities ?? [];
-    write({ amenities: current.includes(value) ? current.filter((item) => item !== value) : [...current, value] });
+    write({
+      amenities: current.includes(value)
+        ? current.filter((item) => item !== value)
+        : [...current, value],
+    });
   };
 
   return (
@@ -85,12 +93,39 @@ export function FilterSidebar({ className }: { className?: string }) {
       </div>
 
       <div>
-        <Label>{isEs ? 'Ciudad' : 'City'}</Label>
-        <Select value={filters.citySlug ?? ''} onChange={(event) => write({ city: event.target.value })}>
-          <option value="">{t.explorer.everyCity}</option>
-          {cities.map((city) => (
-            <option key={city.slug} value={city.slug}>
-              {city.name}, {city.state}
+        <div className="mb-1 flex items-center justify-between">
+          <Label>{isEs ? 'Ciudad' : 'City'}</Label>
+          <span className="font-mono text-[0.62rem] font-medium text-emerald-600 dark:text-emerald-400">
+            {isEs ? 'Operación en Cuenca' : 'Active in Cuenca'}
+          </span>
+        </div>
+        <Select
+          value={filters.citySlug ?? 'cuenca'}
+          onChange={(event) => write({ city: event.target.value })}
+        >
+          <option value="cuenca">
+            {isEs ? 'Cuenca, Azuay (Operación activa)' : 'Cuenca, Azuay (Active)'}
+          </option>
+          <optgroup label={isEs ? 'Próxima expansión nacional' : 'Upcoming national expansion'}>
+            {upcomingCities.map((city) => (
+              <option key={city.slug} value={city.slug} disabled>
+                {city.name}, {city.state} ({isEs ? 'Próximamente' : 'Coming soon'})
+              </option>
+            ))}
+          </optgroup>
+        </Select>
+      </div>
+
+      <div>
+        <Label>{isEs ? 'Sector de Cuenca' : 'Cuenca Sector'}</Label>
+        <Select
+          value={cuencaSectors.some((s) => s.name === filters.q) ? filters.q : ''}
+          onChange={(event) => write({ q: event.target.value })}
+        >
+          <option value="">{isEs ? 'Todos los sectores de Cuenca' : 'All Cuenca sectors'}</option>
+          {cuencaSectors.map((s) => (
+            <option key={s.slug} value={s.name}>
+              {s.name}
             </option>
           ))}
         </Select>
@@ -142,7 +177,10 @@ export function FilterSidebar({ className }: { className?: string }) {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <Label>{t.explorer.bedsMin}</Label>
-          <Select value={filters.bedrooms ?? ''} onChange={(event) => write({ beds: event.target.value })}>
+          <Select
+            value={filters.bedrooms ?? ''}
+            onChange={(event) => write({ beds: event.target.value })}
+          >
             <option value="">{t.explorer.any}</option>
             {[1, 2, 3, 4, 5].map((value) => (
               <option key={value} value={value}>
@@ -153,7 +191,10 @@ export function FilterSidebar({ className }: { className?: string }) {
         </div>
         <div>
           <Label>{t.explorer.bathsMin}</Label>
-          <Select value={filters.bathrooms ?? ''} onChange={(event) => write({ baths: event.target.value })}>
+          <Select
+            value={filters.bathrooms ?? ''}
+            onChange={(event) => write({ baths: event.target.value })}
+          >
             <option value="">{t.explorer.any}</option>
             {[1, 2, 3, 4].map((value) => (
               <option key={value} value={value}>
@@ -185,20 +226,22 @@ export function FilterSidebar({ className }: { className?: string }) {
       <div>
         <Label>{t.explorer.mustInclude}</Label>
         <div className="grid gap-2">
-          {getAmenities(isEs).slice(0, 10).map((amenity) => {
-            const checked = filters.amenities?.includes(amenity.id) ?? false;
-            return (
-              <label key={amenity.id} className="flex cursor-pointer items-center gap-3 text-sm">
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => toggleAmenity(amenity.id)}
-                  className="size-4 rounded-xs accent-[hsl(var(--primary))]"
-                />
-                {amenity.label}
-              </label>
-            );
-          })}
+          {getAmenities(isEs)
+            .slice(0, 10)
+            .map((amenity) => {
+              const checked = filters.amenities?.includes(amenity.id) ?? false;
+              return (
+                <label key={amenity.id} className="flex cursor-pointer items-center gap-3 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleAmenity(amenity.id)}
+                    className="size-4 rounded-xs accent-[hsl(var(--primary))]"
+                  />
+                  {amenity.label}
+                </label>
+              );
+            })}
         </div>
       </div>
 

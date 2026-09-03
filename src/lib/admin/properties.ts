@@ -23,7 +23,7 @@ export async function getProperty(id: string, actor: Actor) {
 
 export async function createProperty(input: unknown, actor: Actor) {
   const parsed = createPropertySchema.parse(input);
-  const { agentId: requestedAgentId, ...scalarData } = parsed;
+  const { agentId: requestedAgentId, images, ...scalarData } = parsed;
 
   if (actor.role !== 'ADMIN' && requestedAgentId && requestedAgentId !== actor.agentId) {
     throw new AdminError('You cannot create properties for another agent.');
@@ -32,9 +32,23 @@ export async function createProperty(input: unknown, actor: Actor) {
   if (!agentId) throw new AdminError('This property needs a responsible agent.');
 
   const property = await prisma.property.create({
-    data: { ...scalarData, agentId },
+    data: {
+      ...scalarData,
+      agentId,
+      images:
+        images && images.length > 0
+          ? {
+              create: images.map((url, position) => ({ url, position })),
+            }
+          : undefined,
+    },
   });
-  await logActivity({ entityType: 'PROPERTY', entityId: property.id, action: 'CREATED', actorUserId: actor.id });
+  await logActivity({
+    entityType: 'PROPERTY',
+    entityId: property.id,
+    action: 'CREATED',
+    actorUserId: actor.id,
+  });
   return property;
 }
 
@@ -42,10 +56,23 @@ export async function updateProperty(id: string, input: unknown, actor: Actor) {
   const existing = await prisma.property.findFirst({
     where: { id, deletedAt: null, ...agentScopeWhere(actor) },
   });
-  if (!existing) throw new AdminError('Property not found or you do not have permission to edit it.');
+  if (!existing)
+    throw new AdminError('Property not found or you do not have permission to edit it.');
 
   const parsed = updatePropertySchema.parse(input);
-  const property = await prisma.property.update({ where: { id }, data: parsed });
+  const { images, ...scalarData } = parsed;
+
+  const property = await prisma.property.update({ where: { id }, data: scalarData });
+
+  if (images !== undefined) {
+    await prisma.propertyImage.deleteMany({ where: { propertyId: id } });
+    if (images.length > 0) {
+      await prisma.propertyImage.createMany({
+        data: images.map((url, position) => ({ propertyId: id, url, position })),
+      });
+    }
+  }
+
   await logActivity({
     entityType: 'PROPERTY',
     entityId: property.id,
@@ -60,10 +87,16 @@ export async function softDeleteProperty(id: string, actor: Actor) {
   const existing = await prisma.property.findFirst({
     where: { id, deletedAt: null, ...agentScopeWhere(actor) },
   });
-  if (!existing) throw new AdminError('Property not found or you do not have permission to delete it.');
+  if (!existing)
+    throw new AdminError('Property not found or you do not have permission to delete it.');
 
   const property = await prisma.property.update({ where: { id }, data: { deletedAt: new Date() } });
-  await logActivity({ entityType: 'PROPERTY', entityId: property.id, action: 'DELETED', actorUserId: actor.id });
+  await logActivity({
+    entityType: 'PROPERTY',
+    entityId: property.id,
+    action: 'DELETED',
+    actorUserId: actor.id,
+  });
   return property;
 }
 
@@ -71,14 +104,18 @@ export async function assertEditableProperty(propertyId: string, actor: Actor) {
   const property = await prisma.property.findFirst({
     where: { id: propertyId, deletedAt: null, ...agentScopeWhere(actor) },
   });
-  if (!property) throw new AdminError('Property not found or you do not have permission to edit it.');
+  if (!property)
+    throw new AdminError('Property not found or you do not have permission to edit it.');
   return property;
 }
 
 export async function addPropertyImage(propertyId: string, url: string, actor: Actor) {
   await assertEditableProperty(propertyId, actor);
 
-  const highest = await prisma.propertyImage.aggregate({ where: { propertyId }, _max: { position: true } });
+  const highest = await prisma.propertyImage.aggregate({
+    where: { propertyId },
+    _max: { position: true },
+  });
   const image = await prisma.propertyImage.create({
     data: { propertyId, url, position: (highest._max.position ?? -1) + 1 },
   });

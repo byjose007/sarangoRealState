@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronDown, Search, SlidersHorizontal } from 'lucide-react';
-import { cities } from '@/data/reference';
+import { activeCity, upcomingCities, cuencaSectors } from '@/data/reference';
 import { getPropertyTypeOptions } from '@/constants/navigation';
 import { useTranslation } from '@/i18n/context';
 import { cn } from '@/lib/utils';
@@ -15,7 +15,8 @@ export function HeroSearch({ className }: { className?: string }) {
   const router = useRouter();
   const { t, isEs } = useTranslation();
   const [status, setStatus] = React.useState('for-sale');
-  const [city, setCity] = React.useState('');
+  const [city, setCity] = React.useState('cuenca');
+  const [sector, setSector] = React.useState('');
   const [type, setType] = React.useState('');
   const [beds, setBeds] = React.useState('');
   const [maxPrice, setMaxPrice] = React.useState('');
@@ -43,7 +44,8 @@ export function HeroSearch({ className }: { className?: string }) {
     if (beds) params.set('beds', beds);
     if (maxPrice) params.set('maxPrice', maxPrice);
     if (minArea) params.set('minArea', minArea);
-    if (q) params.set('q', q);
+    const combinedQ = [q, sector].filter(Boolean).join(' ');
+    if (combinedQ) params.set('q', combinedQ);
     router.push(`/properties?${params.toString()}`);
   };
 
@@ -69,12 +71,16 @@ export function HeroSearch({ className }: { className?: string }) {
         <div>
           <Label htmlFor="hero-city">{isEs ? 'Ciudad' : 'City'}</Label>
           <Select id="hero-city" value={city} onChange={(event) => setCity(event.target.value)}>
-            <option value="">{isEs ? 'Cualquiera' : 'Anywhere we survey'}</option>
-            {cities.map((item) => (
-              <option key={item.slug} value={item.slug}>
-                {item.name}, {item.state}
-              </option>
-            ))}
+            <option value="cuenca">
+              {isEs ? 'Cuenca, Azuay (Operación activa)' : 'Cuenca, Azuay (Active)'}
+            </option>
+            <optgroup label={isEs ? 'Próxima expansión nacional' : 'Upcoming national expansion'}>
+              {upcomingCities.map((item) => (
+                <option key={item.slug} value={item.slug} disabled>
+                  {item.name}, {item.state} ({isEs ? 'Próximamente' : 'Coming soon'})
+                </option>
+              ))}
+            </optgroup>
           </Select>
         </div>
         <div>
@@ -116,13 +122,28 @@ export function HeroSearch({ className }: { className?: string }) {
       </button>
 
       {advanced ? (
-        <div className="mt-3 grid gap-2 border-t border-border/60 pt-3 md:grid-cols-3">
+        <div className="mt-3 grid gap-2 border-t border-border/60 pt-3 sm:grid-cols-2 md:grid-cols-4">
+          <div>
+            <Label htmlFor="hero-sector">{isEs ? 'Sector en Cuenca' : 'Cuenca Sector'}</Label>
+            <Select
+              id="hero-sector"
+              value={sector}
+              onChange={(event) => setSector(event.target.value)}
+            >
+              <option value="">{isEs ? 'Todos los sectores' : 'All sectors'}</option>
+              {cuencaSectors.map((s) => (
+                <option key={s.slug} value={s.name}>
+                  {s.name}
+                </option>
+              ))}
+            </Select>
+          </div>
           <div>
             <Label htmlFor="hero-max">{isEs ? 'Precio máximo ($)' : 'Max price'}</Label>
             <Input
               id="hero-max"
               type="number"
-              placeholder="1,200,000"
+              placeholder={status === 'for-rent' ? '800' : '1,200,000'}
               value={maxPrice}
               onChange={(event) => setMaxPrice(event.target.value)}
             />

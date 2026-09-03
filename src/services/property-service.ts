@@ -26,23 +26,31 @@ const STATUS_TO_FRONTEND: Record<string, Property['status']> = {
 };
 
 const TYPE_TO_PRISMA = {
-  villa: 'VILLA',
+  house: 'HOUSE',
   apartment: 'APARTMENT',
-  townhouse: 'TOWNHOUSE',
-  penthouse: 'PENTHOUSE',
-  loft: 'LOFT',
+  land: 'LAND',
   estate: 'ESTATE',
+  studio: 'STUDIO',
+  penthouse: 'PENTHOUSE',
+  townhouse: 'TOWNHOUSE',
+  commercial: 'COMMERCIAL',
   office: 'OFFICE',
+  villa: 'VILLA',
+  loft: 'LOFT',
 } as const;
 
 const TYPE_TO_FRONTEND: Record<string, Property['type']> = {
-  VILLA: 'villa',
+  HOUSE: 'house',
   APARTMENT: 'apartment',
-  TOWNHOUSE: 'townhouse',
-  PENTHOUSE: 'penthouse',
-  LOFT: 'loft',
+  LAND: 'land',
   ESTATE: 'estate',
+  STUDIO: 'studio',
+  PENTHOUSE: 'penthouse',
+  TOWNHOUSE: 'townhouse',
+  COMMERCIAL: 'commercial',
   OFFICE: 'office',
+  VILLA: 'villa',
+  LOFT: 'loft',
 };
 
 const PRICE_PERIOD_TO_FRONTEND: Record<string, Property['pricePeriod']> = {
@@ -107,6 +115,12 @@ function mapProperty(row: PropertyRow): Property {
     hoaFee: row.hoaFee ?? undefined,
     propertyTax: row.propertyTax,
     nearby: row.nearby as { label: string; distance: number }[],
+    deposit: row.deposit ?? undefined,
+    leaseTerm: row.leaseTerm ?? undefined,
+    utilitiesIncluded: row.utilitiesIncluded ?? undefined,
+    petsAllowed: row.petsAllowed ?? undefined,
+    floorLevel: row.floorLevel ?? undefined,
+    commercialUse: row.commercialUse ?? undefined,
   };
 }
 
@@ -120,6 +134,7 @@ function buildWhere(filters: PropertyFilters): Prisma.PropertyWhereInput {
       { title: { contains: filters.q, mode: 'insensitive' } },
       { address: { contains: filters.q, mode: 'insensitive' } },
       { reference: { contains: filters.q, mode: 'insensitive' } },
+      { description: { contains: filters.q, mode: 'insensitive' } },
     ];
   }
   if (filters.status && filters.status !== 'all') {
@@ -159,7 +174,9 @@ const ORDER_BY: Record<SortKey, Prisma.PropertyOrderByWithRelationInput> = {
   popular: { views: 'desc' },
 };
 
-export async function searchProperties(filters: PropertyFilters = {}): Promise<Paginated<Property>> {
+export async function searchProperties(
+  filters: PropertyFilters = {},
+): Promise<Paginated<Property>> {
   const perPage = filters.perPage ?? PER_PAGE;
   const page = Math.max(filters.page ?? 1, 1);
   const where = buildWhere(filters);
@@ -226,7 +243,9 @@ export async function getPropertiesByIds(ids: string[]): Promise<Property[]> {
     include: PROPERTY_INCLUDE,
   });
   const byId = new Map(rows.map(mapProperty).map((property) => [property.id, property]));
-  return ids.map((id) => byId.get(id)).filter((property): property is Property => Boolean(property));
+  return ids
+    .map((id) => byId.get(id))
+    .filter((property): property is Property => Boolean(property));
 }
 
 export async function getPropertiesByAgent(agentId: string): Promise<Property[]> {
@@ -256,7 +275,9 @@ export async function getFacets() {
         maxPrice: priceAgg._max.price ?? 0,
         total,
         byCity: Object.fromEntries(byCity.map((row) => [row.citySlug, row._count._all])),
-        byType: Object.fromEntries(byType.map((row) => [TYPE_TO_FRONTEND[row.type] ?? row.type, row._count._all])),
+        byType: Object.fromEntries(
+          byType.map((row) => [TYPE_TO_FRONTEND[row.type] ?? row.type, row._count._all]),
+        ),
       };
     },
     EMPTY_FACETS,
@@ -265,12 +286,18 @@ export async function getFacets() {
 }
 
 export async function getPropertyBySlug(slug: string): Promise<Property | null> {
-  const row = await prisma.property.findFirst({ where: { slug, ...ACTIVE }, include: PROPERTY_INCLUDE });
+  const row = await prisma.property.findFirst({
+    where: { slug, ...ACTIVE },
+    include: PROPERTY_INCLUDE,
+  });
   return row ? mapProperty(row) : null;
 }
 
 export async function getPropertyById(id: string): Promise<Property | null> {
-  const row = await prisma.property.findFirst({ where: { id, ...ACTIVE }, include: PROPERTY_INCLUDE });
+  const row = await prisma.property.findFirst({
+    where: { id, ...ACTIVE },
+    include: PROPERTY_INCLUDE,
+  });
   return row ? mapProperty(row) : null;
 }
 

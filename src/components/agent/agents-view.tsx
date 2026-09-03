@@ -30,17 +30,46 @@ export function AgentsView({ agents, cities }: { agents: Agent[]; cities: City[]
           ))}
         </div>
 
-        <div className="mt-16 grid gap-4 border-t border-border pt-10 sm:grid-cols-3">
-          {cities.slice(0, 3).map((city) => (
-            <div key={city.slug}>
+        <div className="mt-16 grid gap-6 border-t border-border pt-10 sm:grid-cols-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="size-2 rounded-full bg-emerald-500" />
               <p className="font-display text-lg">
-                {isEs ? `Oficina de ${city.name}` : `${city.name} desk`}
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {isEs ? city.blurb : city.blurbEn}
+                {isEs ? 'Sede Central Cuenca' : 'Cuenca Headquarters'}
               </p>
             </div>
-          ))}
+            <p className="mt-2 text-sm text-muted-foreground">
+              {isEs
+                ? 'Edificio Alameda 1, José Astudillo Regalado. Operación principal y atención personalizada para todo Azuay.'
+                : 'Alameda 1 Building, José Astudillo Regalado. Primary headquarters serving all of Azuay.'}
+            </p>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="size-2 rounded-full bg-brass" />
+              <p className="font-display text-lg">
+                {isEs ? 'Cobertura Cantonal' : 'Regional Coverage'}
+              </p>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {isEs
+                ? 'Levantamiento pericial y comercialización en todos los sectores urbanos y campestres de Cuenca.'
+                : 'Technical appraisal and listings throughout all urban and rural sectors of Cuenca.'}
+            </p>
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="size-2 rounded-full bg-muted-foreground" />
+              <p className="font-display text-lg">
+                {isEs ? 'Próxima Expansión' : 'Upcoming Expansion'}
+              </p>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {isEs
+                ? 'Próximamente apertura de operaciones en Quito, Guayaquil y principales ciudades del país.'
+                : 'Upcoming expansion to Quito, Guayaquil and major cities across Ecuador.'}
+            </p>
+          </div>
         </div>
       </section>
     </>
