@@ -12,6 +12,9 @@ export class UploadError extends Error {}
 
 const IMAGE_EXTENSION_BY_MIME: Record<string, string> = {
   'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/pjpeg': 'jpg',
+  'image/jfif': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
   'image/avif': 'avif',
@@ -25,13 +28,30 @@ const DOCUMENT_TYPE_BY_MIME: Record<string, { ext: string; type: 'PDF' | 'DWG' |
   'application/x-zip-compressed': { ext: 'zip', type: 'ZIP' },
 };
 
-export function extensionForImage(mimeType: string): string {
-  const ext = IMAGE_EXTENSION_BY_MIME[mimeType];
-  if (!ext) throw new UploadError(`Unsupported image type: ${mimeType || 'unknown'}`);
-  return ext;
+export function extensionForImage(mimeType: string, filename?: string): string {
+  const normalizedMime = mimeType?.toLowerCase()?.trim();
+  if (normalizedMime && IMAGE_EXTENSION_BY_MIME[normalizedMime]) {
+    return IMAGE_EXTENSION_BY_MIME[normalizedMime];
+  }
+  if (filename) {
+    const dotIndex = filename.lastIndexOf('.');
+    if (dotIndex !== -1) {
+      const fileExt = filename.slice(dotIndex + 1).toLowerCase();
+      if (fileExt === 'jpeg' || fileExt === 'jpg' || fileExt === 'jpe' || fileExt === 'jfif') {
+        return 'jpg';
+      }
+      if (fileExt === 'png') return 'png';
+      if (fileExt === 'webp') return 'webp';
+      if (fileExt === 'avif') return 'avif';
+    }
+  }
+  throw new UploadError(`Unsupported image type: ${mimeType || 'unknown'}`);
 }
 
-export function extensionForDocument(mimeType: string): { ext: string; type: 'PDF' | 'DWG' | 'ZIP' } {
+export function extensionForDocument(mimeType: string): {
+  ext: string;
+  type: 'PDF' | 'DWG' | 'ZIP';
+} {
   const match = DOCUMENT_TYPE_BY_MIME[mimeType];
   if (!match) throw new UploadError(`Unsupported document type: ${mimeType || 'unknown'}`);
   return match;

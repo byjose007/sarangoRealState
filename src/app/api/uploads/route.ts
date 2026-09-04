@@ -29,7 +29,12 @@ export async function POST(request: NextRequest) {
   const kind = formData.get('kind');
   const documentName = formData.get('name');
 
-  if (!(file instanceof File) || typeof propertyId !== 'string' || !propertyId || (kind !== 'image' && kind !== 'document')) {
+  if (
+    !(file instanceof File) ||
+    typeof propertyId !== 'string' ||
+    !propertyId ||
+    (kind !== 'image' && kind !== 'document')
+  ) {
     return NextResponse.json({ ok: false, message: 'Invalid upload request.' }, { status: 400 });
   }
 
@@ -40,7 +45,7 @@ export async function POST(request: NextRequest) {
     const property = await propertiesCore.assertEditableProperty(propertyId, actor);
 
     if (kind === 'image') {
-      const ext = extensionForImage(file.type);
+      const ext = extensionForImage(file.type, file.name);
       const saved = await saveUploadedFile(file, MAX_IMAGE_BYTES, ext);
       const image = await propertiesCore.addPropertyImage(propertyId, saved.url, actor);
       revalidatePublicPropertyPaths(property.slug);
@@ -58,8 +63,10 @@ export async function POST(request: NextRequest) {
     revalidatePublicPropertyPaths(property.slug);
     return NextResponse.json({ ok: true, data: document });
   } catch (error) {
-    if (error instanceof UploadError) return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
-    if (error instanceof AdminError) return NextResponse.json({ ok: false, message: error.message }, { status: 403 });
+    if (error instanceof UploadError)
+      return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
+    if (error instanceof AdminError)
+      return NextResponse.json({ ok: false, message: error.message }, { status: 403 });
     throw error;
   }
 }
@@ -85,11 +92,15 @@ export async function DELETE(request: NextRequest) {
       await deleteUploadedFileByUrl(removed.href);
       propertyId = removed.propertyId;
     }
-    const property = await prisma.property.findUnique({ where: { id: propertyId }, select: { slug: true } });
+    const property = await prisma.property.findUnique({
+      where: { id: propertyId },
+      select: { slug: true },
+    });
     if (property) revalidatePublicPropertyPaths(property.slug);
     return NextResponse.json({ ok: true });
   } catch (error) {
-    if (error instanceof AdminError) return NextResponse.json({ ok: false, message: error.message }, { status: 403 });
+    if (error instanceof AdminError)
+      return NextResponse.json({ ok: false, message: error.message }, { status: 403 });
     throw error;
   }
 }

@@ -611,7 +611,7 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               ref={fileInputRef}
               type="file"
               multiple
-              accept="image/jpeg,image/png,image/webp,image/avif"
+              accept="image/jpeg,image/jpg,image/pjpeg,image/png,image/webp,image/avif,.jpeg,.jpg,.png,.webp,.avif"
               className="hidden"
               onChange={(e) => handleFilesUpload(e.target.files)}
             />
@@ -760,8 +760,8 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {isEs
-                  ? 'Soporta JPG, PNG, WebP o AVIF (hasta 10MB c/u)'
-                  : 'Supports JPG, PNG, WebP or AVIF (up to 10MB each)'}
+                  ? 'Soporta JPEG, JPG, PNG, WebP o AVIF (hasta 10MB c/u)'
+                  : 'Supports JPEG, JPG, PNG, WebP or AVIF (up to 10MB each)'}
               </p>
             </div>
           )}

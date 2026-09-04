@@ -4,15 +4,26 @@ import { extensionForDocument, extensionForImage, formatFileSize, UploadError } 
 describe('extensionForImage', () => {
   it('maps supported image MIME types to their extension', () => {
     expect(extensionForImage('image/jpeg')).toBe('jpg');
+    expect(extensionForImage('image/jpg')).toBe('jpg');
+    expect(extensionForImage('image/pjpeg')).toBe('jpg');
+    expect(extensionForImage('image/jfif')).toBe('jpg');
     expect(extensionForImage('image/png')).toBe('png');
     expect(extensionForImage('image/webp')).toBe('webp');
     expect(extensionForImage('image/avif')).toBe('avif');
   });
 
-  it('rejects an unsupported or spoofed MIME type', () => {
+  it('falls back to filename extension if MIME type is missing or generic', () => {
+    expect(extensionForImage('', 'casa.jpeg')).toBe('jpg');
+    expect(extensionForImage('application/octet-stream', 'fachada.JPEG')).toBe('jpg');
+    expect(extensionForImage('', 'foto.jpg')).toBe('jpg');
+    expect(extensionForImage('', 'plano.png')).toBe('png');
+  });
+
+  it('rejects an unsupported or spoofed MIME type without valid extension', () => {
     expect(() => extensionForImage('image/svg+xml')).toThrow(UploadError);
     expect(() => extensionForImage('text/html')).toThrow(UploadError);
     expect(() => extensionForImage('')).toThrow(UploadError);
+    expect(() => extensionForImage('application/octet-stream', 'archivo.exe')).toThrow(UploadError);
   });
 });
 

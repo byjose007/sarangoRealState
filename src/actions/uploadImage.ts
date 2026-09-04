@@ -13,7 +13,7 @@ export async function uploadImageAction(
     if (!(file instanceof File)) {
       return { ok: false, message: 'No file uploaded.' };
     }
-    const ext = extensionForImage(file.type);
+    const ext = extensionForImage(file.type, file.name);
     const result = await saveUploadedFile(file, MAX_IMAGE_BYTES, ext);
     return {
       ok: true,
