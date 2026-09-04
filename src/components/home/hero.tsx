@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Ruler } from 'lucide-react';
 import { cuencaSectors } from '@/data/reference';
-import { unsplash } from '@/data/images';
 import { useTranslation } from '@/i18n/context';
 import { SmartImage } from '@/components/shared/smart-image';
 import { Button } from '@/components/ui/button';
@@ -16,9 +15,9 @@ export function Hero() {
 
   const facts = React.useMemo(
     () => [
-      ['4.200', t.hero.surveyedListings],
-      ['24', t.hero.avgDaysOnMarket],
-      ['99,4%', t.hero.clientSatisfaction],
+      ['100%', t.hero.verifiedProcess],
+      ['1:1', t.hero.personalizedService],
+      ['Cuenca', t.hero.localFocus],
     ],
     [t],
   );
@@ -34,9 +33,7 @@ export function Hero() {
               transition={{ duration: 0.6 }}
               className="eyebrow"
             >
-              {isEs
-                ? 'Inmobiliaria de precisión · est. 2009'
-                : 'Survey-first brokerage · est. 2009'}
+              {isEs ? 'Inmobiliaria de precisión' : 'Survey-first brokerage'}
             </motion.span>
 
             <motion.h1
@@ -96,11 +93,13 @@ export function Hero() {
             className="tick-frame relative aspect-[4/5] overflow-hidden rounded-xl sm:aspect-[5/4] lg:aspect-[4/5]"
           >
             <SmartImage
-              src={unsplash(2, 1200, 1500)}
-              alt="A surveyed residence at dusk"
+              src="/images/sarango-meeting-room.webp"
+              alt="Sala de reuniones y consultoría Sarango Real Estate"
               fill
               priority
-              sizes="(max-width: 1024px) 100vw, 45vw"
+              quality={95}
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover object-center"
               fallbackSeed="hero"
             />
 
@@ -117,11 +116,11 @@ export function Hero() {
 
             <span className="absolute bottom-[7%] left-1/2 -translate-x-1/2 rounded-full bg-background/90 px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.16em]">
               <Ruler className="mr-1.5 inline size-3 text-brass" />
-              {isEs ? 'fachada 21.4 m' : 'frontage 21.4 m'}
+              {isEs ? 'sala de reuniones' : 'meeting room'}
             </span>
 
             <span className="absolute left-5 top-5 rounded-full bg-background/90 px-3 py-1.5 font-mono text-[0.62rem] uppercase tracking-[0.14em]">
-              VS-001-AZUAY · Cuenca
+              SARANGO · Cuenca
             </span>
           </motion.div>
         </div>

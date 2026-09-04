@@ -69,9 +69,9 @@ export const es: TranslationDictionary = {
     priceRange: 'Rango de precio',
     anyPrice: 'Cualquier precio',
     searchHomes: 'Buscar propiedades',
-    surveyedListings: 'Propiedades verificadas',
-    avgDaysOnMarket: 'Días promedio en mercado',
-    clientSatisfaction: 'Satisfacción de clientes',
+    verifiedProcess: 'Propiedades verificadas antes de publicar',
+    personalizedService: 'Acompañamiento personalizado en cada compra',
+    localFocus: 'Enfoque exclusivo en Cuenca',
   },
   property: {
     forSale: 'En venta',

@@ -7,6 +7,7 @@ import { createClientAction, updateClientAction } from '@/actions/clients';
 import { Input, Textarea } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Field } from '@/components/admin/field';
+import { useTranslation } from '@/i18n/context';
 
 export interface ClientFormValues {
   firstName: string;
@@ -25,6 +26,7 @@ interface ClientFormProps {
 
 export function ClientForm({ clientId, initialValues }: ClientFormProps) {
   const router = useRouter();
+  const { isEs } = useTranslation();
   const [values, setValues] = useState<ClientFormValues>({ ...EMPTY, ...initialValues });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -48,7 +50,9 @@ export function ClientForm({ clientId, initialValues }: ClientFormProps) {
         phone: values.phone || undefined,
         notes: values.notes || undefined,
       };
-      const result = isEdit ? await updateClientAction(clientId!, payload) : await createClientAction(payload);
+      const result = isEdit
+        ? await updateClientAction(clientId!, payload)
+        : await createClientAction(payload);
 
       if (!result.ok) {
         setFormError(result.message);
@@ -70,26 +74,49 @@ export function ClientForm({ clientId, initialValues }: ClientFormProps) {
       {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
 
       <section className="grid gap-5 sm:grid-cols-2">
-        <Field label="First name" error={fieldErrors.firstName}>
-          <Input value={values.firstName} onChange={(e) => set('firstName', e.target.value)} required />
+        <Field label={isEs ? 'Nombre' : 'First name'} error={fieldErrors.firstName}>
+          <Input
+            value={values.firstName}
+            onChange={(e) => set('firstName', e.target.value)}
+            required
+          />
         </Field>
-        <Field label="Last name" error={fieldErrors.lastName}>
-          <Input value={values.lastName} onChange={(e) => set('lastName', e.target.value)} required />
+        <Field label={isEs ? 'Apellido' : 'Last name'} error={fieldErrors.lastName}>
+          <Input
+            value={values.lastName}
+            onChange={(e) => set('lastName', e.target.value)}
+            required
+          />
         </Field>
-        <Field label="Email" error={fieldErrors.email}>
-          <Input type="email" value={values.email} onChange={(e) => set('email', e.target.value)} required />
+        <Field label={isEs ? 'Correo electrónico' : 'Email'} error={fieldErrors.email}>
+          <Input
+            type="email"
+            value={values.email}
+            onChange={(e) => set('email', e.target.value)}
+            required
+          />
         </Field>
-        <Field label="Phone (optional)">
+        <Field label={isEs ? 'Teléfono (opcional)' : 'Phone (optional)'}>
           <Input value={values.phone} onChange={(e) => set('phone', e.target.value)} />
         </Field>
       </section>
 
-      <Field label="Notes (optional)">
+      <Field label={isEs ? 'Notas internas (opcional)' : 'Notes (optional)'}>
         <Textarea rows={4} value={values.notes} onChange={(e) => set('notes', e.target.value)} />
       </Field>
 
       <Button type="submit" disabled={pending}>
-        {pending ? 'Saving…' : isEdit ? 'Save changes' : 'Create client'}
+        {pending
+          ? isEs
+            ? 'Guardando…'
+            : 'Saving…'
+          : isEdit
+            ? isEs
+              ? 'Guardar cambios'
+              : 'Save changes'
+            : isEs
+              ? 'Crear cliente'
+              : 'Create client'}
       </Button>
     </form>
   );

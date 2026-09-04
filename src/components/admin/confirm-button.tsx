@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useTranslation } from '@/i18n/context';
 import { Modal } from '@/components/ui/modal';
 import { Button, type ButtonProps } from '@/components/ui/button';
 
@@ -21,6 +22,7 @@ export function ConfirmActionButton({
   variant = 'outline',
   size = 'sm',
 }: ConfirmActionButtonProps) {
+  const { isEs } = useTranslation();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -30,11 +32,16 @@ export function ConfirmActionButton({
       <Button type="button" variant={variant} size={size} onClick={() => setOpen(true)}>
         {label}
       </Button>
-      <Modal open={open} onClose={() => setOpen(false)} title={confirmTitle} description={confirmDescription}>
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={confirmTitle}
+        description={confirmDescription}
+      >
         {error ? <p className="mb-4 text-sm text-destructive">{error}</p> : null}
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={pending}>
-            Cancel
+            {isEs ? 'Cancelar' : 'Cancel'}
           </Button>
           <Button
             type="button"
@@ -52,7 +59,7 @@ export function ConfirmActionButton({
               });
             }}
           >
-            {pending ? 'Working…' : 'Confirm'}
+            {pending ? (isEs ? 'Procesando…' : 'Working…') : isEs ? 'Confirmar' : 'Confirm'}
           </Button>
         </div>
       </Modal>

@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { ArrowRight, Phone } from 'lucide-react';
-import { unsplash } from '@/data/images';
 import { siteConfig } from '@/constants/site';
 import { useTranslation } from '@/i18n/context';
 import { SmartImage } from '@/components/shared/smart-image';
@@ -13,24 +12,27 @@ export function CallToAction() {
 
   return (
     <section className="container py-20 lg:py-28">
-      <div className="tick-frame relative overflow-hidden rounded-xl">
+      <div className="tick-frame relative overflow-hidden rounded-2xl shadow-xl">
         <SmartImage
-          src={unsplash(20, 1600, 800)}
-          alt=""
+          src="/images/sarango-office.webp"
+          alt="Oficinas Sarango Real Estate"
           fill
+          quality={95}
           sizes="100vw"
           fallbackSeed="cta"
-          className="scale-105"
+          className="object-cover object-center"
         />
-        <div className="absolute inset-0 bg-foreground/72" />
-        <div className="relative px-6 py-20 text-center text-background lg:px-16 lg:py-28">
-          <span className="eyebrow justify-center text-background/70 before:bg-brass">
+        {/* Capa completa de oscurecimiento y sutil difuminado */}
+        <div className="absolute inset-0 bg-neutral-950/65 backdrop-blur-[2px]" />
+
+        <div className="relative px-6 py-20 text-center text-white lg:px-16 lg:py-28">
+          <span className="eyebrow justify-center text-amber-200/90 before:bg-brass">
             {isEs ? 'Listos cuando tú lo estés' : 'Ready when you are'}
           </span>
-          <h2 className="mx-auto mt-5 max-w-2xl text-headline balance">
+          <h2 className="balance mx-auto mt-5 max-w-2xl text-headline font-medium text-white drop-shadow-md">
             {t.home.ctaTitle}
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-background/75">
+          <p className="mx-auto mt-5 max-w-xl text-base text-white/90 lg:text-lg">
             {t.home.ctaSubtitle}
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
@@ -42,7 +44,7 @@ export function CallToAction() {
               className={buttonVariants({
                 size: 'lg',
                 variant: 'outline',
-                className: 'border-background/40 text-background hover:bg-background/10',
+                className: 'border-white/30 text-white backdrop-blur-sm hover:bg-white/10',
               })}
             >
               <Phone className="size-4" /> {siteConfig.phone}

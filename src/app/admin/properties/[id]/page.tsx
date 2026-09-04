@@ -4,7 +4,7 @@ import * as propertiesCore from '@/lib/admin/properties';
 import * as agentsCore from '@/lib/admin/agents';
 import { AdminError } from '@/lib/admin/errors';
 import { PropertyForm, type PropertyFormValues } from '../property-form';
-import { MediaManager } from '../media-manager';
+import { PropertyDocumentsSection } from './property-documents-section';
 import { Separator } from '@/components/ui/separator';
 
 export default async function EditPropertyPage({ params }: { params: Promise<{ id: string }> }) {
@@ -74,16 +74,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
 
       <Separator />
 
-      <div>
-        <h2 className="text-lg tracking-tight">Documentos</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Planos, dossiers y otros archivos descargables mostrados en la ficha del inmueble. Las
-          fotos se gestionan arriba, en &quot;Fotografías y Galería&quot;.
-        </p>
-        <div className="mt-4">
-          <MediaManager propertyId={property.id} documents={property.documents} />
-        </div>
-      </div>
+      <PropertyDocumentsSection propertyId={property.id} documents={property.documents} />
     </div>
   );
 }

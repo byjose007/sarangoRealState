@@ -67,9 +67,9 @@ export interface TranslationDictionary {
     priceRange: string;
     anyPrice: string;
     searchHomes: string;
-    surveyedListings: string;
-    avgDaysOnMarket: string;
-    clientSatisfaction: string;
+    verifiedProcess: string;
+    personalizedService: string;
+    localFocus: string;
   };
   property: {
     forSale: string;

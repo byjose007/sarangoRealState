@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation';
 import { requireAdmin } from '@/lib/session';
 import * as agentsCore from '@/lib/admin/agents';
 import { AdminError } from '@/lib/admin/errors';
-import { AgentForm, type AgentFormValues } from '../agent-form';
+import { type AgentFormValues } from '../agent-form';
+import { EditAgentView } from './edit-agent-view';
 
 export default async function EditAgentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -36,10 +37,5 @@ export default async function EditAgentPage({ params }: { params: Promise<{ id: 
     socialFacebook: social.facebook ?? '',
   };
 
-  return (
-    <div className="max-w-3xl space-y-6">
-      <h1 className="text-headline text-2xl">Edit agent</h1>
-      <AgentForm agentId={agent.id} initialValues={initialValues} />
-    </div>
-  );
+  return <EditAgentView agentId={agent.id} initialValues={initialValues} />;
 }

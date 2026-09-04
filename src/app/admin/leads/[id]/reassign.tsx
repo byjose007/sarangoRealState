@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Select } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { assignLeadAction } from '@/actions/lead-pipeline';
+import { useTranslation } from '@/i18n/context';
 
 export function ReassignLead({
   leadId,
@@ -17,6 +18,7 @@ export function ReassignLead({
   agentOptions: { id: string; name: string }[];
 }) {
   const router = useRouter();
+  const { isEs } = useTranslation();
   const [agentId, setAgentId] = useState(currentAgentId ?? '');
   const [pending, startTransition] = useTransition();
 
@@ -37,7 +39,7 @@ export function ReassignLead({
     <div className="flex gap-2">
       <Select value={agentId} onChange={(e) => setAgentId(e.target.value)} className="flex-1">
         <option value="" disabled>
-          Select an agent
+          {isEs ? 'Seleccionar un agente' : 'Select an agent'}
         </option>
         {agentOptions.map((agent) => (
           <option key={agent.id} value={agent.id}>
@@ -45,8 +47,14 @@ export function ReassignLead({
           </option>
         ))}
       </Select>
-      <Button type="button" variant="outline" size="sm" onClick={submit} disabled={pending || !agentId || agentId === currentAgentId}>
-        {pending ? 'Saving…' : 'Reassign'}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={submit}
+        disabled={pending || !agentId || agentId === currentAgentId}
+      >
+        {pending ? (isEs ? 'Guardando…' : 'Saving…') : isEs ? 'Reasignar' : 'Reassign'}
       </Button>
     </div>
   );
