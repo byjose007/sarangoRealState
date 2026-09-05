@@ -61,12 +61,35 @@ export async function saveUploadedFile(file: File, maxBytes: number, ext: string
   if (file.size > maxBytes) {
     throw new UploadError(`File too large (max ${Math.round(maxBytes / 1024 / 1024)}MB)`);
   }
-  await mkdir(UPLOADS_DIR, { recursive: true });
   const filename = `${randomUUID()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
-  // UPLOADS_DIR is a runtime env var, not a static path — without this hint
-  // Turbopack can't narrow it and traces the whole project into the output.
-  await writeFile(path.join(/* turbopackIgnore: true */ UPLOADS_DIR, filename), buffer);
+  try {
+    await mkdir(UPLOADS_DIR, { recursive: true });
+    // UPLOADS_DIR is a runtime env var, not a static path — without this hint
+    // Turbopack can't narrow it and traces the whole project into the output.
+    await writeFile(path.join(/* turbopackIgnore: true */ UPLOADS_DIR, filename), buffer);
+  } catch (error) {
+    // Filesystem failures (read-only container FS, a volume mounted as root
+    // that the non-root app user can't write to, missing disk) surface here.
+    // Log the real errno so it's visible in the platform logs, then return a
+    // message that points at the actual problem instead of "unexpected error".
+    const code = (error as NodeJS.ErrnoException)?.code;
+    console.error(
+      `[uploads] failed to write ${filename} to "${UPLOADS_DIR}" (code=${code ?? 'unknown'})`,
+      error,
+    );
+    if (code === 'EACCES' || code === 'EPERM') {
+      throw new UploadError(
+        `Cannot write to the uploads directory ("${UPLOADS_DIR}"). The storage volume is not writable by the app.`,
+      );
+    }
+    if (code === 'EROFS') {
+      throw new UploadError(
+        `The uploads directory ("${UPLOADS_DIR}") is on a read-only filesystem. A persistent volume is required.`,
+      );
+    }
+    throw new UploadError(`Could not save the file to "${UPLOADS_DIR}" (${code ?? 'I/O error'}).`);
+  }
   return { filename, url: `${PUBLIC_BASE}/${filename}`, size: file.size };
 }
 

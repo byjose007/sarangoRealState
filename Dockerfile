@@ -52,7 +52,12 @@ RUN chmod +x docker-entrypoint.sh
 
 RUN mkdir -p /app/uploads && chown nextjs:nodejs /app/uploads
 
-USER nextjs
+# Intentionally NOT switching to `USER nextjs` here. The entrypoint starts as
+# root so it can fix ownership of the uploads directory before the server
+# starts — on Railway (and similar hosts) a mounted persistent volume comes up
+# owned by root, so the non-root app process can't write uploads to it. The
+# entrypoint drops to the unprivileged `nextjs` user (via setpriv) before
+# exec'ing the server.
 EXPOSE 3000
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["node", "server.js"]
