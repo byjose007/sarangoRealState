@@ -46,8 +46,12 @@ export function PropertySpecs({
 
   const items = [
     { icon: BedDouble, value: property.bedrooms || '—', label: isEs ? 'hab' : 'bed' },
-    { icon: Bath, value: property.bathrooms, label: isEs ? 'baño' : 'bath' },
-    { icon: Ruler, value: formatNumber(property.area), label: isEs ? 'm²' : 'sq ft' },
+    { icon: Bath, value: property.bathrooms || '—', label: isEs ? 'baño' : 'bath' },
+    {
+      icon: Ruler,
+      value: property.area > 0 ? formatNumber(property.area) : '—',
+      label: isEs ? 'm²' : 'sq ft',
+    },
     { icon: Car, value: property.garages || '—', label: isEs ? 'garaje' : 'garage' },
   ];
 

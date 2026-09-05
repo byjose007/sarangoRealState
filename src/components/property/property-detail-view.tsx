@@ -48,7 +48,11 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
   const overview = [
     { icon: Fingerprint, label: t.propertyDetail.reference, value: property.reference },
     { icon: Building2, label: t.propertyDetail.type, value: getTypeLabel(property.type, language) },
-    { icon: Ruler, label: t.propertyDetail.floorArea, value: formatArea(property.area, language) },
+    {
+      icon: Ruler,
+      label: t.propertyDetail.floorArea,
+      value: property.area > 0 ? formatArea(property.area, language) : '—',
+    },
     {
       icon: LandPlot,
       label: t.propertyDetail.land,
@@ -181,10 +185,12 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
               <p className="font-display text-4xl tracking-tight">
                 {formatListingPrice(property.price, property.pricePeriod, language)}
               </p>
-              <p className="mt-1 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted-foreground">
-                {formatPrice(Math.round(property.price / Math.max(property.area, 1)))}{' '}
-                {isEs ? 'por m²' : 'per sq ft'}
-              </p>
+              {property.area > 0 ? (
+                <p className="mt-1 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted-foreground">
+                  {formatPrice(Math.round(property.price / property.area))}{' '}
+                  {isEs ? 'por m²' : 'per sq ft'}
+                </p>
+              ) : null}
               <div className="mt-5 flex flex-wrap gap-2 sm:justify-end">
                 <FavoriteButton propertyId={property.id} title={property.title} withLabel />
                 <CompareButton propertyId={property.id} title={property.title} withLabel />

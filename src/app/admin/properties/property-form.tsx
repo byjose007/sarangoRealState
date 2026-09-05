@@ -69,6 +69,10 @@ export interface PropertyFormValues {
   commercialUse: string;
 }
 
+/** Mirrors MAX_IMAGE_BYTES in src/lib/uploads.ts — kept here so the client can
+ *  reject oversized files with a clear message before hitting the Server Action. */
+const MAX_IMAGE_UPLOAD_BYTES = 10 * 1024 * 1024;
+
 const defaultCity = cities[0] ?? { slug: 'cuenca', coordinates: { lat: -2.9001, lng: -79.0059 } };
 
 function generateReference(citySlug: string = 'cuenca') {
@@ -90,11 +94,11 @@ const EMPTY: PropertyFormValues = {
   citySlug: defaultCity.slug,
   lat: String(defaultCity.coordinates.lat),
   lng: String(defaultCity.coordinates.lng),
-  bedrooms: '0',
-  bathrooms: '0',
-  garages: '0',
+  bedrooms: '',
+  bathrooms: '',
+  garages: '',
   area: '',
-  landArea: '0',
+  landArea: '',
   yearBuilt: '',
   energyRating: '',
   featured: false,
@@ -140,8 +144,8 @@ function buildPayload(values: PropertyFormValues) {
     bedrooms: num(values.bedrooms) ?? 0,
     bathrooms: num(values.bathrooms) ?? 0,
     garages: num(values.garages) ?? 0,
-    area: num(values.area) ?? 0,
-    landArea: num(values.landArea) ?? 0,
+    area: num(values.area) ? Math.round(Number(values.area)) : 0,
+    landArea: num(values.landArea) ? Math.round(Number(values.landArea)) : 0,
     yearBuilt: num(values.yearBuilt),
     energyRating: values.energyRating || undefined,
     featured: values.featured,
@@ -272,10 +276,20 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
       setUploading(true);
 
       const uploadedUrls: string[] = [];
-      let failCount = 0;
+      const failures: string[] = [];
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+
+        if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+          failures.push(
+            isEs
+              ? `${file.name}: supera el límite de 10MB (${(file.size / 1024 / 1024).toFixed(1)}MB).`
+              : `${file.name}: exceeds the 10MB limit (${(file.size / 1024 / 1024).toFixed(1)}MB).`,
+          );
+          continue;
+        }
+
         const formData = new FormData();
         formData.append('file', file);
 
@@ -284,10 +298,14 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
           if (res.ok && res.data?.url) {
             uploadedUrls.push(res.data.url);
           } else {
-            failCount++;
+            failures.push(`${file.name}: ${res.message}`);
           }
         } catch {
-          failCount++;
+          failures.push(
+            isEs
+              ? `${file.name}: no se pudo subir (archivo demasiado grande o error de red).`
+              : `${file.name}: upload failed (file too large or network error).`,
+          );
         }
       }
 
@@ -303,11 +321,12 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
         );
       }
 
-      if (failCount > 0) {
+      if (failures.length > 0) {
         toast.error(
           isEs
-            ? `No se pudieron subir ${failCount} archivo(s). Comprueba el formato o tamaño.`
-            : `Failed to upload ${failCount} file(s).`,
+            ? `No se pudieron subir ${failures.length} archivo(s):`
+            : `Failed to upload ${failures.length} file(s):`,
+          { description: failures.join('\n') },
         );
       }
 
@@ -967,9 +986,14 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
       {/* 5. DIMENSIONES Y CARACTERÍSTICAS */}
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-display text-lg tracking-tight text-foreground">
-            {isEs ? 'Dimensiones y Capacidad' : 'Specs & Capacity'}
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="font-display text-lg tracking-tight text-foreground">
+              {isEs ? 'Dimensiones y Capacidad' : 'Specs & Capacity'}
+            </h2>
+            <span className="rounded-full bg-muted px-2 py-0.5 font-mono text-[0.68rem] font-medium uppercase tracking-wider text-muted-foreground">
+              {isEs ? 'Opcional' : 'Optional'}
+            </span>
+          </div>
           {values.type === 'LAND' ? (
             <span className="rounded-full bg-primary/10 px-3 py-1 font-mono text-[0.7rem] font-medium text-primary">
               {isEs
@@ -988,6 +1012,7 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               min={0}
               value={values.bedrooms}
               onChange={(e) => set('bedrooms', e.target.value)}
+              placeholder="0"
               disabled={values.type === 'LAND'}
             />
           </Field>
@@ -1000,6 +1025,7 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               min={0}
               value={values.bathrooms}
               onChange={(e) => set('bathrooms', e.target.value)}
+              placeholder="0"
               disabled={values.type === 'LAND'}
             />
           </Field>
@@ -1009,34 +1035,36 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               min={0}
               value={values.garages}
               onChange={(e) => set('garages', e.target.value)}
+              placeholder="0"
             />
           </Field>
           <Field
             label={
               isEs
                 ? values.type === 'LAND'
-                  ? 'Área total (m²)'
-                  : 'Área const. (m²)'
-                : 'Area (sq ft)'
+                  ? 'Metros cuadrados / Área total (m²)'
+                  : 'Metros cuadrados / Área const. (m²)'
+                : 'Floor area (sq ft)'
             }
             error={fieldErrors.area}
           >
             <Input
               type="number"
               min={0}
+              step="any"
               value={values.area}
               onChange={(e) => set('area', e.target.value)}
-              placeholder="250"
-              required
+              placeholder={isEs ? 'Opcional (ej: 180)' : 'Optional (e.g. 180)'}
             />
           </Field>
           <Field
-            label={isEs ? 'Área terreno (m²)' : 'Land area'}
+            label={isEs ? 'Metros cuadrados de terreno (m²)' : 'Land area (m²)'}
             className={values.type === 'LAND' ? 'font-semibold text-primary' : ''}
           >
             <Input
               type="number"
               min={0}
+              step="any"
               value={values.landArea}
               onChange={(e) => {
                 const val = e.target.value;
@@ -1045,7 +1073,7 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
                   set('area', val);
                 }
               }}
-              placeholder="0"
+              placeholder={isEs ? 'Opcional (ej: 250)' : 'Optional (e.g. 250)'}
               className={values.type === 'LAND' ? 'border-primary ring-1 ring-primary/20' : ''}
             />
           </Field>

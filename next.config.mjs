@@ -49,6 +49,13 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['lucide-react', 'react-icons', 'framer-motion'],
+    // Image uploads go through a Server Action (see src/actions/uploadImage.ts).
+    // The default Server Action body limit is 1MB, which rejects normal camera
+    // photos before our own 10MB check in src/lib/uploads.ts can run. Keep this
+    // a little above MAX_IMAGE_BYTES to leave room for multipart overhead.
+    serverActions: {
+      bodySizeLimit: '12mb',
+    },
   },
   async headers() {
     return [{ source: '/(.*)', headers: securityHeaders }];

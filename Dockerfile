@@ -12,6 +12,15 @@ RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
+# Stable Server Actions encryption key baked into the build. Without this,
+# Next.js generates a random key per build, so action IDs rotate on every
+# deploy — anyone with the previous build still open in their browser hits
+# "Failed to find Server Action" (404) until they refresh. Set the matching
+# NEXT_SERVER_ACTIONS_ENCRYPTION_KEY variable in Railway so it's passed here
+# as a build arg (Railway auto-maps service variables to Dockerfile ARGs of
+# the same name).
+ARG NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
+ENV NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=$NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
 RUN npm run build
 
 FROM node:24-slim AS runner

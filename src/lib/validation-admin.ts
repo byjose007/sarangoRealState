@@ -72,11 +72,31 @@ export const propertyScalarSchema = z.object({
   citySlug: z.string().min(1, 'Required'),
   lat: z.coerce.number(),
   lng: z.coerce.number(),
-  bedrooms: z.coerce.number().int().min(0),
-  bathrooms: z.coerce.number().int().min(0),
-  garages: z.coerce.number().int().min(0).default(0),
-  area: z.coerce.number().int().positive('Must be greater than 0'),
-  landArea: z.coerce.number().int().min(0).default(0),
+  bedrooms: z.coerce
+    .number()
+    .min(0)
+    .default(0)
+    .transform((val) => Math.round(val)),
+  bathrooms: z.coerce
+    .number()
+    .min(0)
+    .default(0)
+    .transform((val) => Math.round(val)),
+  garages: z.coerce
+    .number()
+    .min(0)
+    .default(0)
+    .transform((val) => Math.round(val)),
+  area: z.coerce
+    .number()
+    .min(0)
+    .default(0)
+    .transform((val) => Math.round(val)),
+  landArea: z.coerce
+    .number()
+    .min(0)
+    .default(0)
+    .transform((val) => Math.round(val)),
   yearBuilt: z.coerce.number().int().optional(),
   energyRating: energyRating.optional(),
   featured: z.coerce.boolean().default(false),
