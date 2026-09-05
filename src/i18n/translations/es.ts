@@ -56,7 +56,7 @@ export const es: TranslationDictionary = {
   },
   hero: {
     eyebrow: 'Inmobiliaria de Alta Gama',
-    titleLine1: 'Compra con certeza,',
+    titleLine1: 'Encuentra tu espacio,',
     titleLine2: 'sin sorpresas ocultas.',
     subtitle:
       'Sarango Real Estate es una agencia inmobiliaria boutique. Cada propiedad se mide, dibuja y documenta antes de llegar al mercado para que compres con certezas.',

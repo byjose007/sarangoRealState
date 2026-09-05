@@ -444,9 +444,32 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
 
     startTransition(async () => {
       const payload = buildPayload(values);
-      const result = isEdit
-        ? await updatePropertyAction(propertyId!, payload)
-        : await createPropertyAction(payload);
+
+      let result;
+      try {
+        result = isEdit
+          ? await updatePropertyAction(propertyId!, payload)
+          : await createPropertyAction(payload);
+      } catch (error) {
+        // A thrown Server Action (expired session bounced to /admin/login by
+        // the middleware, a rotated action id after a deploy, an unhandled DB
+        // error) would otherwise blow past this transition into an error
+        // boundary — and there is none under /admin, so the screen just goes
+        // blank. Surface it instead and keep the user's input on screen.
+        console.error('[property-form] save failed', error);
+        const message =
+          error instanceof Error &&
+          /fetch|Failed to find Server Action|Unexpected/.test(error.message)
+            ? isEs
+              ? 'No se pudo guardar. Es posible que tu sesión haya expirado — recarga la página e inicia sesión de nuevo.'
+              : 'Could not save. Your session may have expired — reload the page and sign in again.'
+            : isEs
+              ? 'No se pudo guardar por un error del servidor. Inténtalo de nuevo.'
+              : 'Could not save due to a server error. Please try again.';
+        setFormError(message);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
 
       if (!result.ok) {
         setFormError(result.message);

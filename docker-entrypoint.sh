@@ -12,10 +12,13 @@ if [ "$(id -u)" = "0" ]; then
   chown -R nextjs:nodejs "$UPLOADS_DIR" 2>/dev/null || true
 fi
 
-# Run Prisma database migrations if DATABASE_URL is available
+# Run Prisma database migrations if DATABASE_URL is available. A migration
+# failure MUST abort the boot: starting the server against a stale schema is
+# what makes admin writes throw (and, with no error boundary, blank the page).
+# `set -e` turns the failing branch below into a hard exit.
 if [ -n "$DATABASE_URL" ]; then
   echo "Applying database migrations..."
-  ./node_modules/.bin/prisma migrate deploy || node ./node_modules/prisma/build/index.js migrate deploy || true
+  ./node_modules/.bin/prisma migrate deploy || node ./node_modules/prisma/build/index.js migrate deploy
 fi
 
 # Drop privileges to the unprivileged app user for the server process itself.

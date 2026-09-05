@@ -43,7 +43,7 @@ export function Hero() {
               className="balance mt-6 text-display"
             >
               {t.hero.titleLine1}
-              <span className="block italic text-primary">{t.hero.titleLine2}</span>
+              <span className="block italic text-brass">{t.hero.titleLine2}</span>
             </motion.h1>
 
             <motion.p
