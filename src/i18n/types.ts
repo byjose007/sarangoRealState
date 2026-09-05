@@ -142,6 +142,13 @@ export interface TranslationDictionary {
     catalogueIndex: string;
     browseByWhat: string;
     listed: string;
+    showcaseEyebrow: string;
+    showcaseTitle: string;
+    showcaseSubtitle: string;
+    allProperties: string;
+    featuredOnly: string;
+    viewAllInCatalog: string;
+    viewMoreInCategory: string;
     insideSurvey: string;
     surveySub: string;
     surveyDesc: string;

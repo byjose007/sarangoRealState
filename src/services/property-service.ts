@@ -335,6 +335,26 @@ export async function getFeaturedProperties(limit = 9): Promise<Property[]> {
   );
 }
 
+/**
+ * Returns properties for the homepage showcase section, ordered with
+ * featured listings first, then by creation date.
+ */
+export async function getShowcaseProperties(limit = 48): Promise<Property[]> {
+  return safeBuildTimeFetch(
+    async () => {
+      const rows = await prisma.property.findMany({
+        where: ACTIVE,
+        include: PROPERTY_INCLUDE,
+        orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
+        take: limit,
+      });
+      return rows.map(mapProperty);
+    },
+    [],
+    'getShowcaseProperties',
+  );
+}
+
 /** Called from the (statically-generated) sitemap.xml route — see safeBuildTimeFetch. */
 export async function getPropertiesForSitemap() {
   return safeBuildTimeFetch(

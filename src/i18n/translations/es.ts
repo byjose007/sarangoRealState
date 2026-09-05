@@ -149,6 +149,14 @@ export const es: TranslationDictionary = {
     catalogueIndex: 'Índice del catálogo',
     browseByWhat: 'Explorar por tipo de inmueble',
     listed: 'publicadas',
+    showcaseEyebrow: 'Catálogo Seleccionado',
+    showcaseTitle: 'Propiedades Destacadas & Catálogo por Tipología',
+    showcaseSubtitle:
+      'Explora nuestras residencias auditadas por tipo de propiedad o descubre las destacadas de este mes.',
+    allProperties: 'Todas',
+    featuredOnly: 'Destacadas',
+    viewAllInCatalog: 'Explorar catálogo completo',
+    viewMoreInCategory: 'Ver más propiedades en esta categoría',
     insideSurvey: 'Dentro de una auditoría',
     surveySub: 'Cuatro horas en cada casa, antes de publicar la primera foto',
     surveyDesc:

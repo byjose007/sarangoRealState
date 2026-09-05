@@ -1,13 +1,12 @@
 import { Hero } from '@/components/home/hero';
 import { Pillars } from '@/components/home/pillars';
-import { FeaturedProperties } from '@/components/home/featured-properties';
-import { PropertyTypes } from '@/components/home/property-types';
+import { UnifiedPropertyShowcase } from '@/components/home/unified-property-showcase';
 import { VideoFeature } from '@/components/home/video-feature';
 import { CuencaServices } from '@/components/home/cuenca-services';
 import { AgentsPreview } from '@/components/home/agents-preview';
 import { CallToAction } from '@/components/home/cta';
 import { RecentlyViewed } from '@/components/property/recently-viewed';
-import { getFacets, getFeaturedProperties } from '@/services/property-service';
+import { getFacets, getShowcaseProperties } from '@/services/property-service';
 import { listAgents } from '@/services/agent-service';
 
 // Not ISR: this route has no dynamic params, so a Docker build (no DB
@@ -17,8 +16,8 @@ import { listAgents } from '@/services/agent-service';
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const [featured, facets, agents] = await Promise.all([
-    getFeaturedProperties(9),
+  const [showcaseProperties, facets, agents] = await Promise.all([
+    getShowcaseProperties(48),
     getFacets(),
     listAgents(),
   ]);
@@ -27,8 +26,7 @@ export default async function HomePage() {
     <>
       <Hero />
       <Pillars />
-      <FeaturedProperties properties={featured} />
-      <PropertyTypes byType={facets.byType} />
+      <UnifiedPropertyShowcase properties={showcaseProperties} facets={facets} />
       <VideoFeature />
       <CuencaServices />
       <AgentsPreview agents={agents.slice(0, 4)} />

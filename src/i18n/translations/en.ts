@@ -144,6 +144,14 @@ export const en: TranslationDictionary = {
     catalogueIndex: 'Catalogue index',
     browseByWhat: 'Browse by what it is',
     listed: 'listed',
+    showcaseEyebrow: 'Curated Collection',
+    showcaseTitle: 'Featured Residences & Property Types',
+    showcaseSubtitle:
+      'Explore our surveyed residences by architectural type or discover this month’s featured properties.',
+    allProperties: 'All',
+    featuredOnly: 'Featured',
+    viewAllInCatalog: 'Explore full catalogue',
+    viewMoreInCategory: 'View more properties in this category',
     insideSurvey: 'Inside a survey',
     surveySub: 'Four hours in a house, before anyone sees a photograph',
     surveyDesc:

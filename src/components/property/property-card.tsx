@@ -21,7 +21,12 @@ interface PropertyCardProps {
   layout?: 'grid' | 'list';
 }
 
-export function PropertyCard({ property, priority, className, layout = 'grid' }: PropertyCardProps) {
+export function PropertyCard({
+  property,
+  priority,
+  className,
+  layout = 'grid',
+}: PropertyCardProps) {
   const openQuickView = useUi((state) => state.openQuickView);
   const { language, isEs } = useTranslation();
   const isList = layout === 'list';
@@ -30,11 +35,16 @@ export function PropertyCard({ property, priority, className, layout = 'grid' }:
     <article
       className={cn(
         'group relative overflow-hidden rounded-lg border border-border bg-card transition-all duration-500 ease-entrance hover:-translate-y-1 hover:shadow-lift',
-        isList && 'grid gap-0 sm:grid-cols-[minmax(0,22rem)_1fr] hover:translate-y-0',
+        isList && 'grid gap-0 hover:translate-y-0 sm:grid-cols-[minmax(0,22rem)_1fr]',
         className,
       )}
     >
-      <div className={cn('relative overflow-hidden', isList ? 'aspect-[4/3] sm:aspect-auto' : 'aspect-[4/3]')}>
+      <div
+        className={cn(
+          'relative overflow-hidden',
+          isList ? 'aspect-[4/3] sm:aspect-auto' : 'aspect-[4/3]',
+        )}
+      >
         <SmartImage
           src={property.images[0] as string}
           alt={property.title}
@@ -49,17 +59,21 @@ export function PropertyCard({ property, priority, className, layout = 'grid' }:
           <Badge variant={property.status === 'for-rent' ? 'brass' : 'solid'}>
             {getStatusLabel(property.status, language)}
           </Badge>
-          {property.featured ? <Badge variant="glass">{isEs ? 'Auditada' : 'Surveyed'}</Badge> : null}
+          {property.featured ? (
+            <Badge variant="brass" className="shadow-sm">
+              <span className="text-[0.6rem]">★</span> {isEs ? 'Destacada' : 'Featured'}
+            </Badge>
+          ) : null}
         </div>
 
-        <div className="absolute right-4 top-4 z-10 flex flex-col gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 focus-within:opacity-100">
+        <div className="absolute right-4 top-4 z-10 flex flex-col gap-2 opacity-0 transition-opacity duration-300 focus-within:opacity-100 group-hover:opacity-100">
           <FavoriteButton propertyId={property.id} title={property.title} />
           <CompareButton propertyId={property.id} title={property.title} />
           <button
             type="button"
             aria-label={`Quick view ${property.title}`}
             onClick={() => openQuickView(property.id)}
-            className="grid h-9 w-9 place-items-center rounded-full glass transition-colors"
+            className="glass grid h-9 w-9 place-items-center rounded-full transition-colors"
           >
             <Eye className="size-4" />
           </button>
