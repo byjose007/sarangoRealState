@@ -6,6 +6,15 @@ RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists
 COPY package.json package-lock.json ./
 RUN npm ci
 
+# Production-only dependency tree for the runtime image. Includes the Prisma
+# CLI and its transitive deps (it's a normal `dependency`), so `prisma migrate
+# deploy` works at container boot without dragging in eslint/vitest/etc.
+FROM node:24-slim AS prod-deps
+WORKDIR /app
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+
 FROM node:24-slim AS builder
 WORKDIR /app
 RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
@@ -38,14 +47,19 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy Prisma schema and CLI so migrations can run on container boot
+# Prisma schema + config so `prisma migrate deploy` can run on container boot
+# (see docker-entrypoint.sh).
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+# Production dependency tree, overlaid on top of the standalone bundle's
+# trimmed node_modules (COPY merges, it doesn't prune). Prisma 7's migrate CLI
+# pulls in @prisma/config and its own transitive deps (effect, c12,
+# deepmerge-ts, empathic, …); cherry-picking a few node_modules subdirectories
+# misses those and the migrate step crashes with MODULE_NOT_FOUND.
+COPY --from=prod-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+# dotenv is a devDependency but prisma.config.ts imports it at runtime.
 COPY --from=deps --chown=nextjs:nodejs /app/node_modules/dotenv ./node_modules/dotenv
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules/.bin ./node_modules/.bin
 
 COPY --chown=nextjs:nodejs docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
