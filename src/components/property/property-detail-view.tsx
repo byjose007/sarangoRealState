@@ -329,9 +329,12 @@ export function PropertyDetailView({ property, agent, city, similar }: PropertyD
               </div>
             ) : null}
 
-            <div className="mt-8 space-y-5">
-              {property.description.split('\n\n').map((paragraph) => (
-                <p key={paragraph} className="max-w-3xl leading-relaxed text-muted-foreground">
+            <div className="mt-8 space-y-4">
+              {property.description.split(/\n\s*\n/).map((paragraph, index) => (
+                <p
+                  key={index}
+                  className="max-w-3xl whitespace-pre-line leading-relaxed text-muted-foreground"
+                >
                   {paragraph}
                 </p>
               ))}

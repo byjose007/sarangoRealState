@@ -74,8 +74,8 @@ export function QuickViewHost() {
 
             <PropertySpecs property={property} className="mt-5 border-y border-border py-4" />
 
-            <p className="mt-4 line-clamp-3 text-sm text-muted-foreground">
-              {property.description.split('\n\n')[1] || property.description}
+            <p className="mt-4 line-clamp-4 whitespace-pre-line text-sm text-muted-foreground">
+              {property.description}
             </p>
 
             {agent ? (

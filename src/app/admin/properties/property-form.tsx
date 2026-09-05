@@ -583,17 +583,25 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
           label={isEs ? 'Descripción detallada' : 'Description'}
           error={fieldErrors.description}
         >
-          <Textarea
-            rows={5}
-            value={values.description}
-            onChange={(e) => set('description', e.target.value)}
-            placeholder={
-              isEs
-                ? 'Describe los acabados, distribución, comodidades y ventajas de la propiedad...'
-                : 'Describe finishes, layout, amenities, and lifestyle highlights...'
-            }
-            required
-          />
+          <div className="space-y-1.5">
+            <Textarea
+              rows={8}
+              value={values.description}
+              onChange={(e) => set('description', e.target.value)}
+              placeholder={
+                isEs
+                  ? 'Describe los acabados, distribución, comodidades y ventajas de la propiedad...'
+                  : 'Describe finishes, layout, amenities, and lifestyle highlights...'
+              }
+              className="whitespace-pre-wrap leading-relaxed"
+              required
+            />
+            <p className="text-[0.72rem] text-muted-foreground">
+              {isEs
+                ? 'Nota: Se respetarán todos los saltos de línea y listas con emojis al publicarse.'
+                : 'Note: All line breaks and emoji lists will be preserved when published.'}
+            </p>
+          </div>
         </Field>
       </div>
 
