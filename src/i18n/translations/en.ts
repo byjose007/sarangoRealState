@@ -145,7 +145,7 @@ export const en: TranslationDictionary = {
     browseByWhat: 'Browse by what it is',
     listed: 'listed',
     showcaseEyebrow: 'Curated Collection',
-    showcaseTitle: 'Featured Residences & Property Types',
+    showcaseTitle: 'Property catalogue',
     showcaseSubtitle:
       'Explore our surveyed residences by architectural type or discover this month’s featured properties.',
     allProperties: 'All',

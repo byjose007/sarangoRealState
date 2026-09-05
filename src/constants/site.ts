@@ -1,7 +1,7 @@
 export const siteConfig = {
   name: 'Sarango Real Estate',
   legalName: 'Sarango Real Estate LLC',
-  tagline: 'Homes measured, not marketed.',
+  tagline: 'Compra con certeza, sin sorpresas ocultas.',
   description:
     'Sarango Real Estate es una agencia inmobiliaria boutique. Cada propiedad se mide, dibuja y documenta antes de llegar al mercado.',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
