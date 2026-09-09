@@ -58,6 +58,8 @@ export interface TranslationDictionary {
     titleLine1: string;
     titleLine2: string;
     subtitle: string;
+    operation: string;
+    allOperations: string;
     tabBuy: string;
     tabRent: string;
     tabNewDev: string;

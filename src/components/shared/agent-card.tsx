@@ -13,7 +13,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
   const { t } = useTranslation();
 
   return (
-    <article className="group h-full overflow-hidden rounded-lg border border-border bg-card transition-shadow hover:shadow-lift">
+    <article className="group relative h-full cursor-pointer overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lift">
       <div className="relative aspect-[4/5] overflow-hidden">
         <SmartImage
           src={agent.avatar}
@@ -23,7 +23,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
           fallbackSeed={agent.id}
           className="transition-transform duration-700 ease-entrance group-hover:scale-105"
         />
-        <span className="absolute left-4 top-4 rounded-full bg-background/90 px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.14em]">
+        <span className="pointer-events-none absolute left-4 top-4 rounded-full bg-background/90 px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.14em]">
           {city?.name ?? 'Sarango Real Estate'}
         </span>
       </div>
@@ -31,7 +31,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
         <h3 className="font-display text-lg tracking-tight">
           <Link
             href={`/agents/${agent.slug}`}
-            className="inline-flex items-center gap-1.5 hover:text-primary"
+            className="inline-flex items-center gap-1.5 transition-colors after:absolute after:inset-0 after:z-10 group-hover:text-primary"
           >
             {agent.name}
             <ArrowUpRight className="size-3.5 opacity-0 transition-opacity group-hover:opacity-100" />

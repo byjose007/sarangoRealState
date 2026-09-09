@@ -60,6 +60,8 @@ export const en: TranslationDictionary = {
     titleLine2: 'not marketed.',
     subtitle:
       'Sarango Real Estate is a boutique residential brokerage. Every listing is surveyed, drawn and documented before it reaches the market, so you buy on evidence instead of adjectives.',
+    operation: 'Operation',
+    allOperations: 'All operations',
     tabBuy: 'Buy',
     tabRent: 'Rent',
     tabNewDev: 'New release',

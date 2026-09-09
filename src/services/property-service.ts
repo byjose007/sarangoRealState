@@ -124,18 +124,89 @@ function mapProperty(row: PropertyRow): Property {
   };
 }
 
+const SEARCH_TYPE_SYNONYMS: Record<string, keyof typeof TYPE_TO_PRISMA> = {
+  departamento: 'apartment',
+  departamentos: 'apartment',
+  depto: 'apartment',
+  deptos: 'apartment',
+  apartamento: 'apartment',
+  apartamentos: 'apartment',
+  apto: 'apartment',
+  aptos: 'apartment',
+  flat: 'apartment',
+  piso: 'apartment',
+  casa: 'house',
+  casas: 'house',
+  residencia: 'house',
+  residencial: 'house',
+  vivienda: 'house',
+  terreno: 'land',
+  terrenos: 'land',
+  lote: 'land',
+  lotes: 'land',
+  solar: 'land',
+  suite: 'studio',
+  suites: 'studio',
+  estudio: 'studio',
+  estudios: 'studio',
+  penthouse: 'penthouse',
+  penthouses: 'penthouse',
+  atico: 'penthouse',
+  quinta: 'estate',
+  quintas: 'estate',
+  finca: 'estate',
+  fincas: 'estate',
+  hacienda: 'estate',
+  haciendas: 'estate',
+  villa: 'villa',
+  villas: 'villa',
+  loft: 'loft',
+  lofts: 'loft',
+  oficina: 'office',
+  oficinas: 'office',
+  consultorio: 'office',
+  local: 'commercial',
+  locales: 'commercial',
+  comercial: 'commercial',
+  adosada: 'townhouse',
+  condominio: 'townhouse',
+};
+
+function detectTypesFromQuery(q: string) {
+  const normalized = q
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+  const tokens = normalized.split(/\s+/).filter(Boolean);
+  const matchedTypes: (typeof TYPE_TO_PRISMA)[keyof typeof TYPE_TO_PRISMA][] = [];
+
+  for (const token of tokens) {
+    const matched = SEARCH_TYPE_SYNONYMS[token];
+    if (matched && TYPE_TO_PRISMA[matched] && !matchedTypes.includes(TYPE_TO_PRISMA[matched])) {
+      matchedTypes.push(TYPE_TO_PRISMA[matched]);
+    }
+  }
+
+  return matchedTypes;
+}
+
 const ACTIVE = { deletedAt: null } as const;
 
 function buildWhere(filters: PropertyFilters): Prisma.PropertyWhereInput {
   const where: Prisma.PropertyWhereInput = { ...ACTIVE };
 
   if (filters.q) {
-    where.OR = [
+    const orConditions: Prisma.PropertyWhereInput[] = [
       { title: { contains: filters.q, mode: 'insensitive' } },
       { address: { contains: filters.q, mode: 'insensitive' } },
       { reference: { contains: filters.q, mode: 'insensitive' } },
       { description: { contains: filters.q, mode: 'insensitive' } },
     ];
+    const detectedTypes = detectTypesFromQuery(filters.q);
+    if (detectedTypes.length > 0) {
+      orConditions.push({ type: { in: detectedTypes } });
+    }
+    where.OR = orConditions;
   }
   if (filters.status && filters.status !== 'all') {
     where.status = STATUS_TO_PRISMA[filters.status];

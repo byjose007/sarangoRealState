@@ -87,7 +87,7 @@ const EMPTY: PropertyFormValues = {
   title: '',
   description: '',
   status: 'FOR_SALE',
-  type: 'HOUSE',
+  type: '',
   pricePeriod: 'TOTAL',
   price: '',
   address: '',
@@ -127,17 +127,99 @@ function getCityCoords(slug: string) {
   return found?.coordinates ?? { lat: -2.9001, lng: -79.0059 };
 }
 
+interface DetectedAttributes {
+  type?: string;
+  typeLabel?: string;
+  status?: string;
+  statusLabel?: string;
+  pricePeriod?: string;
+}
+
+function detectAttributesFromText(text: string, isEs: boolean): DetectedAttributes {
+  const normalized = text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  const result: DetectedAttributes = {};
+
+  // Status detection
+  if (
+    /\b(arriendo|arrienda|arrendar|alquiler|alquila|alquilar|renta|rentar|por mes|mensual)\b/.test(
+      normalized,
+    )
+  ) {
+    result.status = 'FOR_RENT';
+    result.statusLabel = isEs ? 'En alquiler' : 'For rent';
+    result.pricePeriod = 'MONTH';
+  } else if (
+    /\b(obra nueva|nuevo desarrollo|en planos|en construccion|preventa)\b/.test(normalized)
+  ) {
+    result.status = 'NEW_DEVELOPMENT';
+    result.statusLabel = isEs ? 'Nuevo desarrollo' : 'New development';
+    result.pricePeriod = 'TOTAL';
+  } else if (/\b(venta|vende|se vende)\b/.test(normalized)) {
+    result.status = 'FOR_SALE';
+    result.statusLabel = isEs ? 'En venta' : 'For sale';
+    result.pricePeriod = 'TOTAL';
+  }
+
+  // Type detection (ordered to prioritize composite terms)
+  if (/\b(casa en conjunto|adosada|adosado|condominio|townhouse)\b/.test(normalized)) {
+    result.type = 'TOWNHOUSE';
+    result.typeLabel = isEs ? 'Casa en conjunto / Adosada' : 'Townhouse';
+  } else if (
+    /\b(departamento|departamentos|depto|deptos|apartamento|apartamentos|apto|aptos|flat|piso)\b/.test(
+      normalized,
+    )
+  ) {
+    result.type = 'APARTMENT';
+    result.typeLabel = isEs ? 'Departamento' : 'Apartment';
+  } else if (
+    /\b(suite|suites|estudio|estudios|minidepartamento|mini departamento)\b/.test(normalized)
+  ) {
+    result.type = 'STUDIO';
+    result.typeLabel = isEs ? 'Suite / Estudio' : 'Studio';
+  } else if (/\b(penthouse|penthouses|atico)\b/.test(normalized)) {
+    result.type = 'PENTHOUSE';
+    result.typeLabel = isEs ? 'Ático / Penthouse' : 'Penthouse';
+  } else if (/\b(quinta|quintas|finca|fincas|hacienda|haciendas)\b/.test(normalized)) {
+    result.type = 'ESTATE';
+    result.typeLabel = isEs ? 'Finca / Quinta' : 'Estate';
+  } else if (/\b(terreno|terrenos|lote|lotes|solar)\b/.test(normalized)) {
+    result.type = 'LAND';
+    result.typeLabel = isEs ? 'Terreno / Lote' : 'Land';
+  } else if (/\b(villa|villas)\b/.test(normalized)) {
+    result.type = 'VILLA';
+    result.typeLabel = isEs ? 'Villa' : 'Villa';
+  } else if (/\b(loft|lofts)\b/.test(normalized)) {
+    result.type = 'LOFT';
+    result.typeLabel = isEs ? 'Loft' : 'Loft';
+  } else if (/\b(oficina|oficinas|consultorio|consultorios)\b/.test(normalized)) {
+    result.type = 'OFFICE';
+    result.typeLabel = isEs ? 'Oficina' : 'Office';
+  } else if (/\b(local|locales|comercial)\b/.test(normalized)) {
+    result.type = 'COMMERCIAL';
+    result.typeLabel = isEs ? 'Local comercial' : 'Commercial';
+  } else if (/\b(casa|casas|residencia|residencial|vivienda)\b/.test(normalized)) {
+    result.type = 'HOUSE';
+    result.typeLabel = isEs ? 'Casa residencial' : 'House';
+  }
+
+  return result;
+}
+
 function buildPayload(values: PropertyFormValues) {
   return {
-    reference: values.reference,
-    slug: values.slug,
-    title: values.title,
-    description: values.description,
+    reference: values.reference.trim(),
+    slug: values.slug.trim(),
+    title: values.title.trim(),
+    description: values.description.trim(),
     status: values.status,
     type: values.type,
     pricePeriod: values.pricePeriod,
     price: num(values.price) ?? 0,
-    address: values.address,
+    address: values.address.trim(),
     citySlug: values.citySlug,
     lat: num(values.lat) ?? 0,
     lng: num(values.lng) ?? 0,
@@ -192,6 +274,17 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
   });
 
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(Boolean(initialValues?.slug));
+  const [isTypeManuallyEdited, setIsTypeManuallyEdited] = useState(
+    Boolean(propertyId || initialValues?.type),
+  );
+  const [isStatusManuallyEdited, setIsStatusManuallyEdited] = useState(
+    Boolean(propertyId || initialValues?.status),
+  );
+  const [autoDetectedInfo, setAutoDetectedInfo] = useState<{
+    typeLabel?: string;
+    statusLabel?: string;
+  } | null>(null);
+
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -215,13 +308,38 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
   }
 
   function handleTitleChange(newTitle: string) {
+    const sanitizedTitle = newTitle.replace(/^\t+/, '');
+    const detected = detectAttributesFromText(sanitizedTitle, isEs);
+
     setValues((prev) => {
-      const next = { ...prev, title: newTitle };
+      const next = { ...prev, title: sanitizedTitle };
       if (!isSlugManuallyEdited) {
-        next.slug = slugify(newTitle);
+        next.slug = slugify(sanitizedTitle);
+      }
+      if (!isTypeManuallyEdited && detected.type) {
+        next.type = detected.type;
+        if (detected.type === 'LAND') {
+          next.bedrooms = '0';
+          next.bathrooms = '0';
+        }
+      }
+      if (!isStatusManuallyEdited && detected.status) {
+        next.status = detected.status;
+        if (detected.pricePeriod) {
+          next.pricePeriod = detected.pricePeriod;
+        }
       }
       return next;
     });
+
+    if (detected.typeLabel || detected.statusLabel) {
+      setAutoDetectedInfo({
+        typeLabel: !isTypeManuallyEdited ? detected.typeLabel : undefined,
+        statusLabel: !isStatusManuallyEdited ? detected.statusLabel : undefined,
+      });
+    } else {
+      setAutoDetectedInfo(null);
+    }
   }
 
   function handleCityChange(newCitySlug: string) {
@@ -442,6 +560,16 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
     setFormError(null);
     setFieldErrors({});
 
+    if (!values.type) {
+      const typeError = isEs
+        ? 'Debes seleccionar el tipo de inmueble.'
+        : 'You must select a property type.';
+      setFieldErrors({ type: typeError });
+      setFormError(typeError);
+      toast.error(typeError);
+      return;
+    }
+
     startTransition(async () => {
       const payload = buildPayload(values);
 
@@ -501,18 +629,33 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
           {isEs ? 'Información básica' : 'Basic information'}
         </h2>
         <section className="grid gap-5 sm:grid-cols-2">
-          <Field label={isEs ? 'Título' : 'Title'} error={fieldErrors.title}>
-            <Input
-              value={values.title}
-              onChange={(e) => handleTitleChange(e.target.value)}
-              placeholder={
-                isEs
-                  ? 'Ej. Villa Moderna en Puertas del Sol'
-                  : 'e.g. Modern Villa in Puertas del Sol'
-              }
-              required
-            />
-          </Field>
+          <div>
+            <Field label={isEs ? 'Título' : 'Title'} error={fieldErrors.title}>
+              <Input
+                value={values.title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder={
+                  isEs
+                    ? 'Ej. Villa Moderna en Puertas del Sol'
+                    : 'e.g. Modern Villa in Puertas del Sol'
+                }
+                required
+              />
+            </Field>
+            {autoDetectedInfo && (autoDetectedInfo.typeLabel || autoDetectedInfo.statusLabel) ? (
+              <div className="mt-1.5 flex items-center gap-1.5 font-mono text-[0.68rem] text-primary">
+                <Sparkles className="size-3 shrink-0 animate-pulse text-primary" />
+                <span>
+                  {isEs ? 'Detectado automáticamente: ' : 'Auto-detected: '}
+                  <strong className="font-semibold">
+                    {[autoDetectedInfo.typeLabel, autoDetectedInfo.statusLabel]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </strong>
+                </span>
+              </div>
+            ) : null}
+          </div>
 
           <Field label="Slug (URL)" error={fieldErrors.slug}>
             <div className="flex gap-2">
@@ -824,8 +967,14 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
           {isEs ? 'Clasificación y Precio' : 'Classification & Pricing'}
         </h2>
         <section className="grid gap-5 sm:grid-cols-3">
-          <Field label={isEs ? 'Estado' : 'Status'}>
-            <Select value={values.status} onChange={(e) => set('status', e.target.value)}>
+          <Field label={isEs ? 'Estado' : 'Status'} error={fieldErrors.status}>
+            <Select
+              value={values.status}
+              onChange={(e) => {
+                setIsStatusManuallyEdited(true);
+                set('status', e.target.value);
+              }}
+            >
               {Object.entries(statusDict).map(([val, label]) => (
                 <option key={val} value={val}>
                   {label}
@@ -833,11 +982,12 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               ))}
             </Select>
           </Field>
-          <Field label={isEs ? 'Tipo de inmueble' : 'Property type'}>
+          <Field label={isEs ? 'Tipo de inmueble' : 'Property type'} error={fieldErrors.type}>
             <Select
               value={values.type}
               onChange={(e) => {
                 const nextType = e.target.value;
+                setIsTypeManuallyEdited(true);
                 setValues((prev) => ({
                   ...prev,
                   type: nextType,
@@ -845,6 +995,9 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
                 }));
               }}
             >
+              <option value="" disabled>
+                {isEs ? '— Selecciona el tipo de inmueble —' : '— Select property type —'}
+              </option>
               {Object.entries(typeDict).map(([val, label]) => (
                 <option key={val} value={val}>
                   {label}

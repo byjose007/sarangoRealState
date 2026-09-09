@@ -60,6 +60,8 @@ export const es: TranslationDictionary = {
     titleLine2: 'sin sorpresas ocultas.',
     subtitle:
       'Sarango Real Estate es una agencia inmobiliaria boutique. Cada propiedad se mide, dibuja y documenta antes de llegar al mercado para que compres con certezas.',
+    operation: 'Operación',
+    allOperations: 'Todas las operaciones',
     tabBuy: 'Comprar',
     tabRent: 'Alquilar',
     tabNewDev: 'Obra nueva',

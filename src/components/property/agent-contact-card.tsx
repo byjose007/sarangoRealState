@@ -74,7 +74,11 @@ export function AgentContactCard({
   return (
     <div className="rounded-lg border border-border bg-card p-6">
       <div className="flex items-center gap-4">
-        <div className="relative size-16 shrink-0 overflow-hidden rounded-full">
+        <Link
+          href={`/agents/${agent.slug}`}
+          className="relative size-16 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-85"
+          aria-label={agent.name}
+        >
           <SmartImage
             src={agent.avatar}
             alt={agent.name}
@@ -82,7 +86,7 @@ export function AgentContactCard({
             sizes="64px"
             fallbackSeed={agent.id}
           />
-        </div>
+        </Link>
         <div>
           <Link
             href={`/agents/${agent.slug}`}

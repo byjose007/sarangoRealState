@@ -14,7 +14,7 @@ import { Input, Label, Select } from '@/components/ui/input';
 export function HeroSearch({ className }: { className?: string }) {
   const router = useRouter();
   const { t, isEs } = useTranslation();
-  const [status, setStatus] = React.useState('for-sale');
+  const [status, setStatus] = React.useState('for-rent');
   const [city, setCity] = React.useState('cuenca');
   const [sector, setSector] = React.useState('');
   const [type, setType] = React.useState('');
@@ -26,11 +26,12 @@ export function HeroSearch({ className }: { className?: string }) {
 
   const propertyTypes = React.useMemo(() => getPropertyTypeOptions(t), [t]);
 
-  const tabs = React.useMemo(
+  const operationOptions = React.useMemo(
     () => [
-      { value: 'for-sale', label: t.hero.tabBuy },
       { value: 'for-rent', label: t.hero.tabRent },
+      { value: 'for-sale', label: t.hero.tabBuy },
       { value: 'new-development', label: t.hero.tabNewDev },
+      { value: 'all', label: t.hero.allOperations },
     ],
     [t],
   );
@@ -38,7 +39,9 @@ export function HeroSearch({ className }: { className?: string }) {
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
     const params = new URLSearchParams();
-    params.set('status', status);
+    if (status && status !== 'all') {
+      params.set('status', status);
+    }
     if (city) params.set('city', city);
     if (type) params.set('types', type);
     if (beds) params.set('beds', beds);
@@ -51,23 +54,21 @@ export function HeroSearch({ className }: { className?: string }) {
 
   return (
     <form onSubmit={submit} className={cn('glass rounded-xl p-3 sm:p-4', className)}>
-      <div className="flex flex-wrap items-center gap-1 px-1 pb-3">
-        {tabs.map((tab) => (
-          <button
-            key={tab.value}
-            type="button"
-            onClick={() => setStatus(tab.value)}
-            className={cn(
-              'rounded-full px-4 py-2 font-mono text-[0.68rem] uppercase tracking-[0.14em] transition-colors',
-              status === tab.value ? 'bg-foreground text-background' : 'hover:bg-muted/70',
-            )}
+      <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-[1.1fr_1.35fr_1.1fr_0.9fr_auto]">
+        <div>
+          <Label htmlFor="hero-operation">{t.hero.operation}</Label>
+          <Select
+            id="hero-operation"
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
           >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid gap-2 md:grid-cols-[1.4fr_1fr_1fr_auto]">
+            {operationOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Select>
+        </div>
         <div>
           <Label htmlFor="hero-city">{isEs ? 'Ciudad' : 'City'}</Label>
           <Select id="hero-city" value={city} onChange={(event) => setCity(event.target.value)}>
@@ -105,8 +106,8 @@ export function HeroSearch({ className }: { className?: string }) {
             ))}
           </Select>
         </div>
-        <div className="flex items-end">
-          <Button type="submit" size="lg" className="h-11 w-full md:w-auto">
+        <div className="flex items-end sm:col-span-2 lg:col-span-1">
+          <Button type="submit" size="lg" className="h-11 w-full lg:w-auto">
             <Search className="size-4" /> {t.nav.searchBtn}
           </Button>
         </div>

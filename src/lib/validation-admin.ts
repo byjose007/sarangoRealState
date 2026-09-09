@@ -43,19 +43,24 @@ export type CreateAgentInput = z.infer<typeof createAgentSchema>;
 export type UpdateAgentInput = z.infer<typeof updateAgentSchema>;
 
 const listingStatus = z.enum(['FOR_SALE', 'FOR_RENT', 'SOLD', 'NEW_DEVELOPMENT']);
-const propertyType = z.enum([
-  'HOUSE',
-  'APARTMENT',
-  'LAND',
-  'ESTATE',
-  'STUDIO',
-  'PENTHOUSE',
-  'TOWNHOUSE',
-  'COMMERCIAL',
-  'OFFICE',
-  'VILLA',
-  'LOFT',
-]);
+const propertyType = z.enum(
+  [
+    'HOUSE',
+    'APARTMENT',
+    'LAND',
+    'ESTATE',
+    'STUDIO',
+    'PENTHOUSE',
+    'TOWNHOUSE',
+    'COMMERCIAL',
+    'OFFICE',
+    'VILLA',
+    'LOFT',
+  ],
+  {
+    errorMap: () => ({ message: 'Debes seleccionar el tipo de inmueble' }),
+  },
+);
 const pricePeriod = z.enum(['MONTH', 'TOTAL']);
 const energyRating = z.enum(['A', 'B', 'C', 'D']);
 
