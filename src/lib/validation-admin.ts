@@ -10,8 +10,8 @@ const socialSchema = z
 
 const slug = z
   .string()
-  .min(1, 'Required')
-  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Use lowercase letters, numbers and hyphens only');
+  .min(1, 'El slug es obligatorio')
+  .regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'Usa solo letras minúsculas, números y guiones');
 
 export const agentScalarSchema = z.object({
   slug,
@@ -65,16 +65,16 @@ const pricePeriod = z.enum(['MONTH', 'TOTAL']);
 const energyRating = z.enum(['A', 'B', 'C', 'D']);
 
 export const propertyScalarSchema = z.object({
-  reference: z.string().min(1, 'Required'),
+  reference: z.string().min(1, 'La referencia es obligatoria'),
   slug,
-  title: z.string().min(1, 'Required'),
-  description: z.string().min(1, 'Required'),
+  title: z.string().min(1, 'El título es obligatorio'),
+  description: z.string().min(1, 'La descripción es obligatoria'),
   status: listingStatus,
   type: propertyType,
-  price: z.coerce.number().int().positive('Must be greater than 0'),
+  price: z.coerce.number().int().positive('El precio debe ser mayor a 0'),
   pricePeriod,
-  address: z.string().min(1, 'Required'),
-  citySlug: z.string().min(1, 'Required'),
+  address: z.string().min(1, 'La dirección es obligatoria'),
+  citySlug: z.string().min(1, 'Selecciona una ciudad'),
   lat: z.coerce.number(),
   lng: z.coerce.number(),
   bedrooms: z.coerce

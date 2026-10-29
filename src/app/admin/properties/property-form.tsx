@@ -15,7 +15,7 @@ import {
   STATUS_LABELS_ES,
   STATUS_LABELS_EN,
 } from '@/lib/admin/labels';
-import { slugify } from '@/lib/utils';
+import { slugify, cn } from '@/lib/utils';
 import { useTranslation } from '@/i18n/context';
 import {
   Upload,
@@ -30,6 +30,8 @@ import {
   Image as ImageIcon,
   Link as LinkIcon,
   X,
+  CheckCircle2,
+  AlertCircle,
 } from 'lucide-react';
 
 export interface PropertyFormValues {
@@ -303,6 +305,87 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
   const typeDict = isEs ? PROPERTY_TYPE_LABELS_ES : PROPERTY_TYPE_LABELS_EN;
   const amenitiesList = useMemo(() => getAmenities(isEs), [isEs]);
 
+  const scrollToField = useCallback((fieldKey: string) => {
+    const target =
+      document.getElementById(`field-${fieldKey}`) ||
+      document.getElementById(fieldKey) ||
+      document.querySelector(`[name="${fieldKey}"]`);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const input =
+        target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'TEXTAREA'
+          ? target
+          : target.querySelector('input, select, textarea');
+      if (input instanceof HTMLElement) {
+        input.focus();
+      }
+    }
+  }, []);
+
+  const completionStats = useMemo(() => {
+    const requiredChecks = [
+      { key: 'title', label: isEs ? 'Título' : 'Title', done: Boolean(values.title.trim()) },
+      { key: 'slug', label: 'Slug', done: Boolean(values.slug.trim()) },
+      {
+        key: 'reference',
+        label: isEs ? 'Referencia' : 'Reference',
+        done: Boolean(values.reference.trim()),
+      },
+      ...(agentOptions && agentOptions.length > 0
+        ? [{ key: 'agentId', label: isEs ? 'Agente' : 'Agent', done: Boolean(values.agentId) }]
+        : []),
+      {
+        key: 'description',
+        label: isEs ? 'Descripción' : 'Description',
+        done: Boolean(values.description.trim()),
+      },
+      { key: 'status', label: isEs ? 'Estado' : 'Status', done: Boolean(values.status) },
+      {
+        key: 'type',
+        label: isEs ? 'Tipo de inmueble' : 'Property type',
+        done: Boolean(values.type),
+      },
+      { key: 'price', label: isEs ? 'Precio' : 'Price', done: Number(values.price) > 0 },
+      {
+        key: 'address',
+        label: isEs ? 'Dirección' : 'Address',
+        done: Boolean(values.address.trim()),
+      },
+      { key: 'citySlug', label: isEs ? 'Ciudad' : 'City', done: Boolean(values.citySlug) },
+    ];
+
+    const recommendedChecks = [
+      { key: 'images', label: isEs ? 'Fotos' : 'Photos', done: values.images.length > 0 },
+      {
+        key: 'area',
+        label: isEs ? 'Superficie' : 'Floor area',
+        done: Number(values.area) > 0 || Number(values.landArea) > 0,
+      },
+      {
+        key: 'amenities',
+        label: isEs ? 'Amenidades' : 'Amenities',
+        done: values.amenityIds.length > 0,
+      },
+    ];
+
+    const totalRequired = requiredChecks.length;
+    const doneRequired = requiredChecks.filter((c) => c.done).length;
+    const missingRequired = requiredChecks.filter((c) => !c.done);
+
+    const totalScoreItems = totalRequired + recommendedChecks.length;
+    const scoreAchieved = doneRequired + recommendedChecks.filter((c) => c.done).length;
+    const percentage = Math.round((scoreAchieved / totalScoreItems) * 100);
+
+    return {
+      requiredChecks,
+      missingRequired,
+      totalRequired,
+      doneRequired,
+      isReady: missingRequired.length === 0,
+      percentage,
+    };
+  }, [values, isEs, agentOptions]);
+
   function set<K extends keyof PropertyFormValues>(key: K, value: PropertyFormValues[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));
   }
@@ -560,13 +643,48 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
     setFormError(null);
     setFieldErrors({});
 
+    const errors: Record<string, string> = {};
+    if (!values.title.trim()) {
+      errors.title = isEs ? 'El título es obligatorio.' : 'Title is required.';
+    }
+    if (!values.slug.trim()) {
+      errors.slug = isEs ? 'El slug es obligatorio.' : 'Slug is required.';
+    }
+    if (!values.reference.trim()) {
+      errors.reference = isEs ? 'La referencia es obligatoria.' : 'Reference is required.';
+    }
+    if (agentOptions && agentOptions.length > 0 && !values.agentId) {
+      errors.agentId = isEs ? 'Debes seleccionar un agente responsable.' : 'Select an agent.';
+    }
+    if (!values.description.trim()) {
+      errors.description = isEs ? 'La descripción es obligatoria.' : 'Description is required.';
+    }
+    if (!values.status) {
+      errors.status = isEs ? 'Debes seleccionar el estado.' : 'Select a status.';
+    }
     if (!values.type) {
-      const typeError = isEs
-        ? 'Debes seleccionar el tipo de inmueble.'
-        : 'You must select a property type.';
-      setFieldErrors({ type: typeError });
-      setFormError(typeError);
-      toast.error(typeError);
+      errors.type = isEs ? 'Debes seleccionar el tipo de inmueble.' : 'Select a property type.';
+    }
+    if (!values.price || Number(values.price) <= 0) {
+      errors.price = isEs ? 'El precio debe ser mayor a 0.' : 'Price must be greater than 0.';
+    }
+    if (!values.address.trim()) {
+      errors.address = isEs ? 'La dirección es obligatoria.' : 'Address is required.';
+    }
+    if (!values.citySlug) {
+      errors.citySlug = isEs ? 'Selecciona una ciudad.' : 'Select a city.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      const firstErrorKey = Object.keys(errors)[0];
+      const count = Object.keys(errors).length;
+      const message = isEs
+        ? `Por favor completa ${count === 1 ? 'el campo obligatorio resaltado' : `los ${count} campos obligatorios resaltados`}.`
+        : `Please complete the ${count} required highlighted field(s).`;
+      setFormError(message);
+      toast.error(message);
+      setTimeout(() => scrollToField(firstErrorKey), 100);
       return;
     }
 
@@ -579,11 +697,6 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
           ? await updatePropertyAction(propertyId!, payload)
           : await createPropertyAction(payload);
       } catch (error) {
-        // A thrown Server Action (expired session bounced to /admin/login by
-        // the middleware, a rotated action id after a deploy, an unhandled DB
-        // error) would otherwise blow past this transition into an error
-        // boundary — and there is none under /admin, so the screen just goes
-        // blank. Surface it instead and keep the user's input on screen.
         console.error('[property-form] save failed', error);
         const message =
           error instanceof Error &&
@@ -601,8 +714,14 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
 
       if (!result.ok) {
         setFormError(result.message);
-        setFieldErrors(result.fieldErrors ?? {});
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const returnedErrors = result.fieldErrors ?? {};
+        setFieldErrors(returnedErrors);
+        const firstErrorKey = Object.keys(returnedErrors)[0];
+        if (firstErrorKey) {
+          setTimeout(() => scrollToField(firstErrorKey), 100);
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
         return;
       }
 
@@ -617,6 +736,67 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
 
   return (
     <form onSubmit={onSubmit} className="space-y-8">
+      {/* BANNER DE COMPLETITUD Y CAMPOS OBLIGATORIOS */}
+      <div className="sticky top-16 z-20 rounded-xl border border-border bg-card/95 p-4 shadow-sm backdrop-blur-md">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs font-semibold uppercase tracking-wider text-foreground">
+                {isEs ? 'Completitud de la publicación' : 'Listing completion'}:{' '}
+                {completionStats.percentage}%
+              </span>
+              {completionStats.isReady ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[0.68rem] font-semibold text-emerald-600 dark:text-emerald-400">
+                  <CheckCircle2 className="size-3" />
+                  {isEs ? 'Listo para publicar' : 'Ready to publish'}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 font-mono text-[0.68rem] font-semibold text-amber-600 dark:text-amber-400">
+                  <AlertCircle className="size-3" />
+                  {isEs
+                    ? `Faltan ${completionStats.missingRequired.length} obligatorios`
+                    : `${completionStats.missingRequired.length} required missing`}
+                </span>
+              )}
+            </div>
+
+            <div className="h-1.5 w-48 overflow-hidden rounded-full bg-muted sm:w-64">
+              <div
+                className={cn(
+                  'h-full transition-all duration-500',
+                  completionStats.isReady ? 'bg-emerald-500' : 'bg-primary',
+                )}
+                style={{ width: `${completionStats.percentage}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-mono text-[0.68rem] text-muted-foreground">
+              <span className="font-bold text-destructive">*</span>{' '}
+              {isEs ? 'Campos obligatorios' : 'Required fields'}
+            </p>
+          </div>
+        </div>
+
+        {/* Píldoras para saltar a campos faltantes */}
+        {!completionStats.isReady && (
+          <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/60 pt-2.5 text-xs">
+            <span className="text-muted-foreground">{isEs ? 'Pendientes:' : 'Missing:'}</span>
+            {completionStats.missingRequired.map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => scrollToField(item.key)}
+                className="rounded-full border border-destructive/30 bg-destructive/5 px-2.5 py-0.5 text-[0.7rem] text-destructive transition-colors hover:bg-destructive/10"
+              >
+                + {item.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
       {formError ? (
         <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
           {formError}
@@ -630,7 +810,12 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
         </h2>
         <section className="grid gap-5 sm:grid-cols-2">
           <div>
-            <Field label={isEs ? 'Título' : 'Title'} error={fieldErrors.title}>
+            <Field
+              id="field-title"
+              label={isEs ? 'Título' : 'Title'}
+              error={fieldErrors.title}
+              required
+            >
               <Input
                 value={values.title}
                 onChange={(e) => handleTitleChange(e.target.value)}
@@ -657,7 +842,13 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
             ) : null}
           </div>
 
-          <Field label="Slug (URL)" error={fieldErrors.slug}>
+          <Field
+            id="field-slug"
+            label="Slug (URL)"
+            error={fieldErrors.slug}
+            required
+            hint={isEs ? 'Identificador para la URL de la propiedad' : 'URL path identifier'}
+          >
             <div className="flex gap-2">
               <Input
                 value={values.slug}
@@ -681,7 +872,12 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
             </div>
           </Field>
 
-          <Field label={isEs ? 'Referencia / Código' : 'Reference'} error={fieldErrors.reference}>
+          <Field
+            id="field-reference"
+            label={isEs ? 'Referencia / Código' : 'Reference'}
+            error={fieldErrors.reference}
+            required
+          >
             <div className="flex gap-2">
               <Input
                 value={values.reference}
@@ -703,7 +899,12 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
           </Field>
 
           {agentOptions ? (
-            <Field label={isEs ? 'Agente responsable' : 'Agent'} error={fieldErrors.agentId}>
+            <Field
+              id="field-agentId"
+              label={isEs ? 'Agente responsable' : 'Agent'}
+              error={fieldErrors.agentId}
+              required
+            >
               <Select
                 value={values.agentId}
                 onChange={(e) => set('agentId', e.target.value)}
@@ -723,8 +924,10 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
         </section>
 
         <Field
+          id="field-description"
           label={isEs ? 'Descripción detallada' : 'Description'}
           error={fieldErrors.description}
+          required
         >
           <div className="space-y-1.5">
             <Textarea
@@ -967,7 +1170,12 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
           {isEs ? 'Clasificación y Precio' : 'Classification & Pricing'}
         </h2>
         <section className="grid gap-5 sm:grid-cols-3">
-          <Field label={isEs ? 'Estado' : 'Status'} error={fieldErrors.status}>
+          <Field
+            id="field-status"
+            label={isEs ? 'Estado' : 'Status'}
+            error={fieldErrors.status}
+            required
+          >
             <Select
               value={values.status}
               onChange={(e) => {
@@ -982,7 +1190,12 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               ))}
             </Select>
           </Field>
-          <Field label={isEs ? 'Tipo de inmueble' : 'Property type'} error={fieldErrors.type}>
+          <Field
+            id="field-type"
+            label={isEs ? 'Tipo de inmueble' : 'Property type'}
+            error={fieldErrors.type}
+            required
+          >
             <Select
               value={values.type}
               onChange={(e) => {
@@ -1005,7 +1218,11 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               ))}
             </Select>
           </Field>
-          <Field label={isEs ? 'Período del precio' : 'Price period'}>
+          <Field
+            id="field-pricePeriod"
+            label={isEs ? 'Período del precio' : 'Price period'}
+            required
+          >
             <Select value={values.pricePeriod} onChange={(e) => set('pricePeriod', e.target.value)}>
               <option value="TOTAL">{isEs ? 'Precio total (Venta)' : 'Total (Sale)'}</option>
               <option value="MONTH">{isEs ? 'Por mes (Alquiler)' : 'Per month (Rent)'}</option>
@@ -1014,17 +1231,37 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
         </section>
 
         <section className="grid gap-5 sm:grid-cols-3">
-          <Field label={isEs ? 'Precio (USD)' : 'Price (USD)'} error={fieldErrors.price}>
-            <Input
-              type="number"
-              min={0}
-              value={values.price}
-              onChange={(e) => set('price', e.target.value)}
-              placeholder="385000"
-              required
-            />
+          <Field
+            id="field-price"
+            label={isEs ? 'Precio (USD)' : 'Price (USD)'}
+            error={fieldErrors.price}
+            required
+          >
+            <div>
+              <Input
+                type="number"
+                min={0}
+                value={values.price}
+                onChange={(e) => set('price', e.target.value)}
+                placeholder="385000"
+                required
+              />
+              {values.price && Number(values.price) > 0 ? (
+                <p className="mt-1 font-mono text-[0.72rem] text-emerald-600 dark:text-emerald-400">
+                  {isEs ? 'Monto: ' : 'Formatted: '}
+                  <strong className="font-semibold">
+                    ${Number(values.price).toLocaleString('en-US')} USD
+                    {values.pricePeriod === 'MONTH' ? (isEs ? ' / mes' : ' / mo') : ''}
+                  </strong>
+                </p>
+              ) : null}
+            </div>
           </Field>
-          <Field label={isEs ? 'Impuesto predial / año (USD)' : 'Property tax / yr'}>
+          <Field
+            id="field-propertyTax"
+            label={isEs ? 'Impuesto predial / año (USD)' : 'Property tax / yr'}
+            optional
+          >
             <Input
               type="number"
               min={0}
@@ -1033,7 +1270,11 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               placeholder="0"
             />
           </Field>
-          <Field label={isEs ? 'Alícuota / mes (opcional)' : 'HOA fee / mo (optional)'}>
+          <Field
+            id="field-hoaFee"
+            label={isEs ? 'Alícuota / expensas / mes' : 'HOA fee / mo'}
+            optional
+          >
             <Input
               type="number"
               min={0}
@@ -1048,14 +1289,18 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
         <div className="space-y-4 rounded-lg border border-border bg-muted/20 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h3 className="text-sm font-semibold text-foreground">
-              {isEs ? 'Condiciones de Arriendo (Opcional)' : 'Rental Conditions (Optional)'}
+              {isEs ? 'Condiciones de Arriendo' : 'Rental Conditions'}
             </h3>
             <span className="font-mono text-[0.68rem] uppercase text-muted-foreground">
-              {isEs ? 'Para propiedades en arriendo' : 'For rental listings'}
+              {isEs ? 'Para propiedades en arriendo (Opcional)' : 'For rental listings (Optional)'}
             </span>
           </div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <Field label={isEs ? 'Garantía (USD)' : 'Security Deposit (USD)'}>
+            <Field
+              id="field-deposit"
+              label={isEs ? 'Garantía (USD)' : 'Security Deposit (USD)'}
+              optional
+            >
               <Input
                 type="number"
                 min={0}
@@ -1064,14 +1309,22 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
                 placeholder="320"
               />
             </Field>
-            <Field label={isEs ? 'Contrato mínimo' : 'Min lease term'}>
+            <Field
+              id="field-leaseTerm"
+              label={isEs ? 'Contrato mínimo' : 'Min lease term'}
+              optional
+            >
               <Input
                 value={values.leaseTerm}
                 onChange={(e) => set('leaseTerm', e.target.value)}
                 placeholder={isEs ? '1 año' : '1 year'}
               />
             </Field>
-            <Field label={isEs ? 'Servicios básicos' : 'Utilities included'}>
+            <Field
+              id="field-utilitiesIncluded"
+              label={isEs ? 'Servicios básicos' : 'Utilities included'}
+              optional
+            >
               <Select
                 value={values.utilitiesIncluded}
                 onChange={(e) => set('utilitiesIncluded', e.target.value)}
@@ -1085,7 +1338,11 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
                 </option>
               </Select>
             </Field>
-            <Field label={isEs ? 'Política de mascotas' : 'Pets policy'}>
+            <Field
+              id="field-petsAllowed"
+              label={isEs ? 'Política de mascotas' : 'Pets policy'}
+              optional
+            >
               <Select
                 value={values.petsAllowed}
                 onChange={(e) => set('petsAllowed', e.target.value)}
@@ -1120,7 +1377,12 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
         </div>
 
         <section className="grid gap-5 sm:grid-cols-2">
-          <Field label={isEs ? 'Dirección' : 'Address'} error={fieldErrors.address}>
+          <Field
+            id="field-address"
+            label={isEs ? 'Dirección' : 'Address'}
+            error={fieldErrors.address}
+            required
+          >
             <Input
               value={values.address}
               onChange={(e) => set('address', e.target.value)}
@@ -1130,7 +1392,7 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               required
             />
           </Field>
-          <Field label={isEs ? 'Ciudad' : 'City'}>
+          <Field id="field-citySlug" label={isEs ? 'Ciudad' : 'City'} required>
             <Select value={values.citySlug} onChange={(e) => handleCityChange(e.target.value)}>
               <option value="cuenca">Cuenca, Azuay ({isEs ? 'Operación activa' : 'Active'})</option>
               <optgroup label={isEs ? 'Próxima expansión nacional' : 'Upcoming national expansion'}>
@@ -1144,7 +1406,12 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               </optgroup>
             </Select>
           </Field>
-          <Field label={isEs ? 'Latitud GPS' : 'Latitude'} error={fieldErrors.lat}>
+          <Field
+            id="field-lat"
+            label={isEs ? 'Latitud GPS' : 'Latitude'}
+            error={fieldErrors.lat}
+            required
+          >
             <Input
               type="number"
               step="any"
@@ -1154,7 +1421,12 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               required
             />
           </Field>
-          <Field label={isEs ? 'Longitud GPS' : 'Longitude'} error={fieldErrors.lng}>
+          <Field
+            id="field-lng"
+            label={isEs ? 'Longitud GPS' : 'Longitude'}
+            error={fieldErrors.lng}
+            required
+          >
             <Input
               type="number"
               step="any"
@@ -1188,8 +1460,10 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
         </div>
         <section className="grid gap-5 sm:grid-cols-3 lg:grid-cols-6">
           <Field
+            id="field-bedrooms"
             label={isEs ? 'Habitaciones' : 'Bedrooms'}
             className={values.type === 'LAND' ? 'opacity-50' : ''}
+            optional
           >
             <Input
               type="number"
@@ -1201,8 +1475,10 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
             />
           </Field>
           <Field
+            id="field-bathrooms"
             label={isEs ? 'Baños' : 'Bathrooms'}
             className={values.type === 'LAND' ? 'opacity-50' : ''}
+            optional
           >
             <Input
               type="number"
@@ -1213,7 +1489,7 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               disabled={values.type === 'LAND'}
             />
           </Field>
-          <Field label={isEs ? 'Estacionamientos' : 'Garages'}>
+          <Field id="field-garages" label={isEs ? 'Estacionamientos' : 'Garages'} optional>
             <Input
               type="number"
               min={0}
@@ -1223,14 +1499,16 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
             />
           </Field>
           <Field
+            id="field-area"
             label={
               isEs
                 ? values.type === 'LAND'
-                  ? 'Metros cuadrados / Área total (m²)'
-                  : 'Metros cuadrados / Área const. (m²)'
+                  ? 'Superficie total (m²)'
+                  : 'Superficie const. (m²)'
                 : 'Floor area (sq ft)'
             }
             error={fieldErrors.area}
+            optional
           >
             <Input
               type="number"
@@ -1242,8 +1520,10 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
             />
           </Field>
           <Field
-            label={isEs ? 'Metros cuadrados de terreno (m²)' : 'Land area (m²)'}
+            id="field-landArea"
+            label={isEs ? 'Superficie terreno (m²)' : 'Land area (m²)'}
             className={values.type === 'LAND' ? 'font-semibold text-primary' : ''}
+            optional
           >
             <Input
               type="number"
@@ -1261,7 +1541,7 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               className={values.type === 'LAND' ? 'border-primary ring-1 ring-primary/20' : ''}
             />
           </Field>
-          <Field label={isEs ? 'Año de const.' : 'Year built'}>
+          <Field id="field-yearBuilt" label={isEs ? 'Año de const.' : 'Year built'} optional>
             <Input
               type="number"
               value={values.yearBuilt}
@@ -1273,11 +1553,9 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
 
         <section className="grid gap-5 sm:grid-cols-2">
           <Field
-            label={
-              isEs
-                ? 'Nivel / Pisos en el edificio (opcional)'
-                : 'Floor / Building levels (optional)'
-            }
+            id="field-floorLevel"
+            label={isEs ? 'Nivel / Pisos en el edificio' : 'Floor / Building levels'}
+            optional
           >
             <Input
               value={values.floorLevel}
@@ -1290,11 +1568,9 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
             />
           </Field>
           <Field
-            label={
-              isEs
-                ? 'Uso comercial sugerido / Ideal para (opcional)'
-                : 'Ideal commercial use (optional)'
-            }
+            id="field-commercialUse"
+            label={isEs ? 'Uso comercial sugerido / Ideal para' : 'Ideal commercial use'}
+            optional
           >
             <Input
               value={values.commercialUse}
@@ -1397,7 +1673,11 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
           {isEs ? 'Multimedia y Certificación' : 'Media links & Certification'}
         </h2>
         <section className="grid gap-5 sm:grid-cols-3">
-          <Field label={isEs ? 'Eficiencia energética' : 'Energy rating'}>
+          <Field
+            id="field-energyRating"
+            label={isEs ? 'Eficiencia energética' : 'Energy rating'}
+            optional
+          >
             <Select
               value={values.energyRating}
               onChange={(e) => set('energyRating', e.target.value)}
@@ -1410,14 +1690,22 @@ export function PropertyForm({ propertyId, initialValues, agentOptions }: Proper
               ))}
             </Select>
           </Field>
-          <Field label={isEs ? 'URL Video (YouTube/Vimeo)' : 'Video URL'}>
+          <Field
+            id="field-videoUrl"
+            label={isEs ? 'URL Video (YouTube/Vimeo)' : 'Video URL'}
+            optional
+          >
             <Input
               value={values.videoUrl}
               onChange={(e) => set('videoUrl', e.target.value)}
               placeholder="https://www.youtube.com/watch?v=..."
             />
           </Field>
-          <Field label={isEs ? 'URL Tour Virtual (Matterport)' : 'Virtual tour URL'}>
+          <Field
+            id="field-tourUrl"
+            label={isEs ? 'URL Tour Virtual (Matterport)' : 'Virtual tour URL'}
+            optional
+          >
             <Input
               value={values.tourUrl}
               onChange={(e) => set('tourUrl', e.target.value)}
