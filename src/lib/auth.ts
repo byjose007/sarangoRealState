@@ -17,6 +17,7 @@ import type { UserRole } from '@/generated/prisma/enums';
 type AppJWT = JWT & { role: UserRole; agentId: string | null };
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   session: { strategy: 'jwt' },
   pages: { signIn: '/admin/login' },
   providers: [

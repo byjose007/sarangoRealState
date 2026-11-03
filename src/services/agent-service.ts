@@ -52,21 +52,39 @@ export async function listAgents(): Promise<Agent[]> {
 }
 
 export async function getAgentBySlug(slug: string): Promise<Agent | null> {
-  const row = await prisma.agent.findFirst({ where: { slug, ...ACTIVE } });
-  return row ? mapAgent(row) : null;
+  return safeBuildTimeFetch(
+    async () => {
+      const row = await prisma.agent.findFirst({ where: { slug, ...ACTIVE } });
+      return row ? mapAgent(row) : null;
+    },
+    null,
+    'getAgentBySlug',
+  );
 }
 
 export async function getAgentById(id: string): Promise<Agent | null> {
-  const row = await prisma.agent.findFirst({ where: { id, ...ACTIVE } });
-  return row ? mapAgent(row) : null;
+  return safeBuildTimeFetch(
+    async () => {
+      const row = await prisma.agent.findFirst({ where: { id, ...ACTIVE } });
+      return row ? mapAgent(row) : null;
+    },
+    null,
+    'getAgentById',
+  );
 }
 
 /** Preserves the order of `ids`. */
 export async function getAgentsByIds(ids: string[]): Promise<Agent[]> {
   if (!ids.length) return [];
-  const rows = await prisma.agent.findMany({ where: { id: { in: ids }, ...ACTIVE } });
-  const byId = new Map(rows.map(mapAgent).map((agent) => [agent.id, agent]));
-  return ids.map((id) => byId.get(id)).filter((agent): agent is Agent => Boolean(agent));
+  return safeBuildTimeFetch(
+    async () => {
+      const rows = await prisma.agent.findMany({ where: { id: { in: ids }, ...ACTIVE } });
+      const byId = new Map(rows.map(mapAgent).map((agent) => [agent.id, agent]));
+      return ids.map((id) => byId.get(id)).filter((agent): agent is Agent => Boolean(agent));
+    },
+    [],
+    'getAgentsByIds',
+  );
 }
 
 /**

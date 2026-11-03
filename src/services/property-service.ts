@@ -250,82 +250,112 @@ export async function searchProperties(
 ): Promise<Paginated<Property>> {
   const perPage = filters.perPage ?? PER_PAGE;
   const page = Math.max(filters.page ?? 1, 1);
-  const where = buildWhere(filters);
-  const orderBy = ORDER_BY[filters.sort ?? 'newest'];
+  return safeBuildTimeFetch(
+    async () => {
+      const where = buildWhere(filters);
+      const orderBy = ORDER_BY[filters.sort ?? 'newest'];
 
-  const total = await prisma.property.count({ where });
-  const totalPages = Math.max(Math.ceil(total / perPage), 1);
-  const safePage = Math.min(page, totalPages);
+      const total = await prisma.property.count({ where });
+      const totalPages = Math.max(Math.ceil(total / perPage), 1);
+      const safePage = Math.min(page, totalPages);
 
-  const rows = await prisma.property.findMany({
-    where,
-    orderBy,
-    skip: (safePage - 1) * perPage,
-    take: perPage,
-    include: PROPERTY_INCLUDE,
-  });
+      const rows = await prisma.property.findMany({
+        where,
+        orderBy,
+        skip: (safePage - 1) * perPage,
+        take: perPage,
+        include: PROPERTY_INCLUDE,
+      });
 
-  return {
-    items: rows.map(mapProperty),
-    total,
-    page: safePage,
-    perPage,
-    totalPages,
-  };
+      return {
+        items: rows.map(mapProperty),
+        total,
+        page: safePage,
+        perPage,
+        totalPages,
+      };
+    },
+    { items: [], total: 0, page, perPage, totalPages: 1 },
+    'searchProperties',
+  );
 }
 
 /** Full result set without pagination — used by the map view. */
 export async function searchAll(filters: PropertyFilters = {}): Promise<Property[]> {
-  const rows = await prisma.property.findMany({
-    where: buildWhere(filters),
-    orderBy: ORDER_BY[filters.sort ?? 'newest'],
-    include: PROPERTY_INCLUDE,
-  });
-  return rows.map(mapProperty);
+  return safeBuildTimeFetch(
+    async () => {
+      const rows = await prisma.property.findMany({
+        where: buildWhere(filters),
+        orderBy: ORDER_BY[filters.sort ?? 'newest'],
+        include: PROPERTY_INCLUDE,
+      });
+      return rows.map(mapProperty);
+    },
+    [],
+    'searchAll',
+  );
 }
 
 export async function getSimilar(property: Property, limit = 3): Promise<Property[]> {
-  const rows = await prisma.property.findMany({
-    where: { ...ACTIVE, id: { not: property.id } },
-    include: PROPERTY_INCLUDE,
-  });
+  return safeBuildTimeFetch(
+    async () => {
+      const rows = await prisma.property.findMany({
+        where: { ...ACTIVE, id: { not: property.id } },
+        include: PROPERTY_INCLUDE,
+      });
 
-  return rows
-    .map(mapProperty)
-    .map((item) => {
-      let score = 0;
-      if (item.citySlug === property.citySlug) score += 3;
-      if (item.type === property.type) score += 2;
-      if (item.status === property.status) score += 2;
-      score -= Math.abs(item.price - property.price) / Math.max(property.price, 1);
-      score -= Math.abs(item.bedrooms - property.bedrooms) * 0.4;
-      return { item, score };
-    })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map((entry) => entry.item);
+      return rows
+        .map(mapProperty)
+        .map((item) => {
+          let score = 0;
+          if (item.citySlug === property.citySlug) score += 3;
+          if (item.type === property.type) score += 2;
+          if (item.status === property.status) score += 2;
+          score -= Math.abs(item.price - property.price) / Math.max(property.price, 1);
+          score -= Math.abs(item.bedrooms - property.bedrooms) * 0.4;
+          return { item, score };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit)
+        .map((entry) => entry.item);
+    },
+    [],
+    'getSimilar',
+  );
 }
 
 /** Preserves the order of `ids` — callers (recently viewed, compare) rely on it. */
 export async function getPropertiesByIds(ids: string[]): Promise<Property[]> {
   if (!ids.length) return [];
-  const rows = await prisma.property.findMany({
-    where: { id: { in: ids }, ...ACTIVE },
-    include: PROPERTY_INCLUDE,
-  });
-  const byId = new Map(rows.map(mapProperty).map((property) => [property.id, property]));
-  return ids
-    .map((id) => byId.get(id))
-    .filter((property): property is Property => Boolean(property));
+  return safeBuildTimeFetch(
+    async () => {
+      const rows = await prisma.property.findMany({
+        where: { id: { in: ids }, ...ACTIVE },
+        include: PROPERTY_INCLUDE,
+      });
+      const byId = new Map(rows.map(mapProperty).map((property) => [property.id, property]));
+      return ids
+        .map((id) => byId.get(id))
+        .filter((property): property is Property => Boolean(property));
+    },
+    [],
+    'getPropertiesByIds',
+  );
 }
 
 export async function getPropertiesByAgent(agentId: string): Promise<Property[]> {
-  const rows = await prisma.property.findMany({
-    where: { agentId, ...ACTIVE },
-    include: PROPERTY_INCLUDE,
-    orderBy: { createdAt: 'desc' },
-  });
-  return rows.map(mapProperty);
+  return safeBuildTimeFetch(
+    async () => {
+      const rows = await prisma.property.findMany({
+        where: { agentId, ...ACTIVE },
+        include: PROPERTY_INCLUDE,
+        orderBy: { createdAt: 'desc' },
+      });
+      return rows.map(mapProperty);
+    },
+    [],
+    'getPropertiesByAgent',
+  );
 }
 
 const EMPTY_FACETS = { minPrice: 0, maxPrice: 0, total: 0, byCity: {}, byType: {} } as const;
@@ -357,19 +387,31 @@ export async function getFacets() {
 }
 
 export async function getPropertyBySlug(slug: string): Promise<Property | null> {
-  const row = await prisma.property.findFirst({
-    where: { slug, ...ACTIVE },
-    include: PROPERTY_INCLUDE,
-  });
-  return row ? mapProperty(row) : null;
+  return safeBuildTimeFetch(
+    async () => {
+      const row = await prisma.property.findFirst({
+        where: { slug, ...ACTIVE },
+        include: PROPERTY_INCLUDE,
+      });
+      return row ? mapProperty(row) : null;
+    },
+    null,
+    'getPropertyBySlug',
+  );
 }
 
 export async function getPropertyById(id: string): Promise<Property | null> {
-  const row = await prisma.property.findFirst({
-    where: { id, ...ACTIVE },
-    include: PROPERTY_INCLUDE,
-  });
-  return row ? mapProperty(row) : null;
+  return safeBuildTimeFetch(
+    async () => {
+      const row = await prisma.property.findFirst({
+        where: { id, ...ACTIVE },
+        include: PROPERTY_INCLUDE,
+      });
+      return row ? mapProperty(row) : null;
+    },
+    null,
+    'getPropertyById',
+  );
 }
 
 /**
@@ -432,5 +474,25 @@ export async function getPropertiesForSitemap() {
     () => prisma.property.findMany({ where: ACTIVE, select: { slug: true, updatedAt: true } }),
     [],
     'getPropertiesForSitemap',
+  );
+}
+
+/**
+ * Every listing still on the market (sold ones excluded), featured first —
+ * feeds the TV / digital-signage slideshow at /publicidad. Uncapped on
+ * purpose: the screen should cycle through the whole catalogue.
+ */
+export async function getSlideshowProperties(): Promise<Property[]> {
+  return safeBuildTimeFetch(
+    async () => {
+      const rows = await prisma.property.findMany({
+        where: { ...ACTIVE, status: { not: 'SOLD' } },
+        include: PROPERTY_INCLUDE,
+        orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
+      });
+      return rows.map(mapProperty);
+    },
+    [],
+    'getSlideshowProperties',
   );
 }

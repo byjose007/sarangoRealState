@@ -212,3 +212,13 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Slow pan/zoom on /publicidad slideshow photography. */
+@keyframes slideshow-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.12);
+  }
+}
