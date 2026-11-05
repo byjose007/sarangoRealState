@@ -28,6 +28,17 @@ const DOCUMENT_TYPE_BY_MIME: Record<string, { ext: string; type: 'PDF' | 'DWG' |
   'application/x-zip-compressed': { ext: 'zip', type: 'ZIP' },
 };
 
+const MIME_BY_EXTENSION: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  avif: 'image/avif',
+  pdf: 'application/pdf',
+  dwg: 'application/acad',
+  zip: 'application/zip',
+};
+
 export function extensionForImage(mimeType: string, filename?: string): string {
   const normalizedMime = mimeType?.toLowerCase()?.trim();
   if (normalizedMime && IMAGE_EXTENSION_BY_MIME[normalizedMime]) {
@@ -63,6 +74,21 @@ export async function saveUploadedFile(file: File, maxBytes: number, ext: string
   }
   const filename = `${randomUUID()}.${ext}`;
   const buffer = Buffer.from(await file.arrayBuffer());
+  const mimeType = MIME_BY_EXTENSION[ext.toLowerCase()] || file.type || 'application/octet-stream';
+
+  let savedToDb = false;
+  try {
+    const { prisma } = await import('@/lib/prisma');
+    await prisma.uploadedFile.upsert({
+      where: { filename },
+      update: { mimeType, size: file.size, data: buffer },
+      create: { filename, mimeType, size: file.size, data: buffer },
+    });
+    savedToDb = true;
+  } catch (dbError) {
+    console.warn(`[uploads] could not persist ${filename} in Postgres:`, dbError);
+  }
+
   try {
     await mkdir(UPLOADS_DIR, { recursive: true });
     // UPLOADS_DIR is a runtime env var, not a static path — without this hint
@@ -78,17 +104,21 @@ export async function saveUploadedFile(file: File, maxBytes: number, ext: string
       `[uploads] failed to write ${filename} to "${UPLOADS_DIR}" (code=${code ?? 'unknown'})`,
       error,
     );
-    if (code === 'EACCES' || code === 'EPERM') {
+    if (!savedToDb) {
+      if (code === 'EACCES' || code === 'EPERM') {
+        throw new UploadError(
+          `Cannot write to the uploads directory ("${UPLOADS_DIR}"). The storage volume is not writable by the app.`,
+        );
+      }
+      if (code === 'EROFS') {
+        throw new UploadError(
+          `The uploads directory ("${UPLOADS_DIR}") is on a read-only filesystem. A persistent volume is required.`,
+        );
+      }
       throw new UploadError(
-        `Cannot write to the uploads directory ("${UPLOADS_DIR}"). The storage volume is not writable by the app.`,
+        `Could not save the file to "${UPLOADS_DIR}" (${code ?? 'I/O error'}).`,
       );
     }
-    if (code === 'EROFS') {
-      throw new UploadError(
-        `The uploads directory ("${UPLOADS_DIR}") is on a read-only filesystem. A persistent volume is required.`,
-      );
-    }
-    throw new UploadError(`Could not save the file to "${UPLOADS_DIR}" (${code ?? 'I/O error'}).`);
   }
   return { filename, url: `${PUBLIC_BASE}/${filename}`, size: file.size };
 }
@@ -98,6 +128,12 @@ export async function deleteUploadedFileByUrl(url: string) {
   const filename = url.split('/').pop();
   if (!filename) return;
   await unlink(path.join(/* turbopackIgnore: true */ UPLOADS_DIR, filename)).catch(() => {});
+  try {
+    const { prisma } = await import('@/lib/prisma');
+    await prisma.uploadedFile.delete({ where: { filename } }).catch(() => {});
+  } catch {
+    // Ignore DB cleanup errors if offline.
+  }
 }
 
 export function formatFileSize(bytes: number): string {

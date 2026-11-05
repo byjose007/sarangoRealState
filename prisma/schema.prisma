@@ -309,3 +309,17 @@ model ActivityLog {
   @@index([entityType, entityId])
   @@map("activity_logs")
 }
+
+/// Persistent binary storage for uploaded property images and documents so
+/// container rebuilds / redeploys (e.g. on Coolify or Railway without an
+/// external volume) never lose uploaded files.
+model UploadedFile {
+  filename  String   @id
+  mimeType  String
+  size      Int
+  data      Bytes
+  createdAt DateTime @default(now())
+
+  @@map("uploaded_files")
+}
+

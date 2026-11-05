@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { readFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { prisma } from '@/lib/prisma';
 
 // In production, nginx serves /uploads/* directly from the shared volume and
 // this route never runs (see nginx/nginx.conf). It exists so uploads render
@@ -29,18 +30,49 @@ export async function GET(_request: Request, { params }: { params: Promise<{ pat
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
+  const ext = path.extname(filename).toLowerCase();
+  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+  const filePath = path.join(/* turbopackIgnore: true */ UPLOADS_DIR, filename);
+
   try {
     // UPLOADS_DIR is a runtime env var, not a static path — without this hint
     // Turbopack can't narrow it and traces the whole project into the output.
-    const data = await readFile(path.join(/* turbopackIgnore: true */ UPLOADS_DIR, filename));
-    const ext = path.extname(filename).toLowerCase();
+    const data = await readFile(filePath);
+    // Backfill into Postgres in the background if it existed on disk before
+    // DB persistence was introduced.
+    void prisma.uploadedFile
+      .upsert({
+        where: { filename },
+        update: {},
+        create: { filename, mimeType: contentType, size: data.byteLength, data },
+      })
+      .catch(() => {});
     return new NextResponse(new Uint8Array(data), {
       headers: {
-        'Content-Type': MIME_TYPES[ext] || 'application/octet-stream',
+        'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
       },
     });
   } catch {
+    // File not on disk (e.g. container was rebuilt/redeployed without a
+    // persistent volume) — fall back to Postgres and warm the disk cache.
+    try {
+      const stored = await prisma.uploadedFile.findUnique({ where: { filename } });
+      if (stored) {
+        const bytes = new Uint8Array(stored.data);
+        void mkdir(UPLOADS_DIR, { recursive: true })
+          .then(() => writeFile(filePath, bytes))
+          .catch(() => {});
+        return new NextResponse(bytes, {
+          headers: {
+            'Content-Type': MIME_TYPES[ext] || stored.mimeType || 'application/octet-stream',
+            'Cache-Control': 'public, max-age=31536000, immutable',
+          },
+        });
+      }
+    } catch {
+      // Ignore DB lookup failure and return 404 below.
+    }
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 }

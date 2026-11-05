@@ -88,15 +88,26 @@ export function PropertySlideshow({ properties, intervalMs, contact }: PropertyS
   const [paused, setPaused] = React.useState(false);
   const [controlsVisible, setControlsVisible] = React.useState(false);
   const [isFullscreen, setIsFullscreen] = React.useState(false);
+  const [failedUrls, setFailedUrls] = React.useState<Record<string, true>>({});
 
   // The list can shrink after a refresh — never point past its end.
   const index = count ? rawIndex % count : 0;
   const slide = properties[index];
   const nextSlide = count > 1 ? properties[(index + 1) % count] : undefined;
 
-  const imageCount = slide ? Math.max(slide.images.length, 1) : 1;
+  const validImages = React.useMemo(
+    () => (slide ? slide.images.filter((url) => Boolean(url) && !failedUrls[url]) : []),
+    [slide, failedUrls],
+  );
+  const imageCount = Math.max(validImages.length, 1);
   const imageDuration = intervalMs / imageCount;
   const imageIndex = Math.min(Math.floor(elapsed / imageDuration), imageCount - 1);
+  const currentImageSrc = validImages[imageIndex] ?? validImages[0] ?? '';
+
+  const markImageFailed = React.useCallback((url: string) => {
+    if (!url) return;
+    setFailedUrls((prev) => (prev[url] ? prev : { ...prev, [url]: true }));
+  }, []);
 
   const go = React.useCallback((to: number) => dispatch({ type: 'go', to, count }), [count]);
 
@@ -226,37 +237,54 @@ export function PropertySlideshow({ properties, intervalMs, contact }: PropertyS
       {/* ── Photography ─────────────────────────────────────────── */}
       <AnimatePresence initial={false}>
         <motion.div
-          key={`${slide.id}-${imageIndex}`}
+          key={`${slide.id}-${currentImageSrc || imageIndex}`}
           className="absolute inset-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: FADE_S, ease: 'easeInOut' }}
         >
-          <div
-            className="absolute inset-0 will-change-transform"
-            style={{
-              animation: `slideshow-kenburns ${imageDuration + FADE_S * 1000}ms ease-out forwards`,
-              animationPlayState: paused ? 'paused' : 'running',
-              transformOrigin: KEN_BURNS_ORIGINS[(index + imageIndex) % KEN_BURNS_ORIGINS.length],
-            }}
-          >
-            <SmartImage
-              src={slide.images[imageIndex] ?? slide.images[0] ?? ''}
-              alt={slide.title}
-              fill
-              priority
-              sizes="100vw"
-              quality={IMAGE_QUALITY}
-              fallbackSeed={slide.id}
-            />
-          </div>
+          {currentImageSrc ? (
+            <div
+              className="absolute inset-0 will-change-transform"
+              style={{
+                animation: `slideshow-kenburns ${imageDuration + FADE_S * 1000}ms ease-out forwards`,
+                animationPlayState: paused ? 'paused' : 'running',
+                transformOrigin: KEN_BURNS_ORIGINS[(index + imageIndex) % KEN_BURNS_ORIGINS.length],
+              }}
+            >
+              <SmartImage
+                src={currentImageSrc}
+                alt={slide.title}
+                fill
+                priority
+                sizes="100vw"
+                quality={IMAGE_QUALITY}
+                fallbackSeed={slide.id}
+                onError={() => markImageFailed(currentImageSrc)}
+              />
+            </div>
+          ) : (
+            <div className="absolute inset-0 grid place-items-center bg-gradient-to-br from-[#0A0F0D] via-[#121C18] to-[#0A0F0D]">
+              <Image
+                src="/images/logo-sarango-real.jpeg"
+                alt={contact.name}
+                width={220}
+                height={220}
+                unoptimized
+                className="rounded-full opacity-20 ring-1 ring-white/15"
+              />
+            </div>
+          )}
         </motion.div>
       </AnimatePresence>
 
       {/* Preload the next photo so cross-fades never reveal a blank frame. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 opacity-0">
-        {[slide.images[imageIndex + 1], nextSlide?.images[0]]
+        {[
+          validImages[imageIndex + 1],
+          nextSlide?.images.find((url) => Boolean(url) && !failedUrls[url]),
+        ]
           .filter((src): src is string => Boolean(src))
           .map((src, i) => (
             <Image
@@ -266,6 +294,8 @@ export function PropertySlideshow({ properties, intervalMs, contact }: PropertyS
               fill
               sizes="100vw"
               quality={IMAGE_QUALITY}
+              unoptimized={src.startsWith('/uploads/')}
+              onError={() => markImageFailed(src)}
             />
           ))}
       </div>
@@ -387,7 +417,7 @@ export function PropertySlideshow({ properties, intervalMs, contact }: PropertyS
       <footer className="absolute inset-x-0 bottom-0 px-[4vw] pb-[4vh]">
         <div className="mb-[1.6vh] flex items-center justify-between text-[0.95vw] text-white/60">
           <div className="flex gap-[0.4vw]">
-            {slide.images.map((_, i) => (
+            {validImages.map((_, i) => (
               <span
                 key={i}
                 className={cn(
