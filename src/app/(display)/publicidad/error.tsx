@@ -12,6 +12,14 @@ export default function PublicidadError({
     if (typeof console !== 'undefined' && console.error) {
       console.error('[PublicidadError]', error);
     }
+    try {
+      const win = window as unknown as { __startLegacyTvSlideshow?: () => boolean };
+      if (typeof win.__startLegacyTvSlideshow === 'function') {
+        win.__startLegacyTvSlideshow();
+      }
+    } catch {
+      // ignore
+    }
   }, [error]);
 
   return (

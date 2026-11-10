@@ -51,6 +51,18 @@ const SMART_TV_POLYFILL_SCRIPT = `
         return Object.prototype.hasOwnProperty.call(obj, prop);
       };
     }
+    if (!Object.fromEntries) {
+      Object.fromEntries = function(entries) {
+        var obj = {};
+        if (!entries) return obj;
+        var arr = Array.from ? Array.from(entries) : entries;
+        for (var i = 0; i < arr.length; i++) {
+          var pair = arr[i];
+          if (pair && pair.length >= 2) obj[pair[0]] = pair[1];
+        }
+        return obj;
+      };
+    }
     if (!String.prototype.replaceAll) {
       String.prototype.replaceAll = function(search, replacement) {
         return this.split(search).join(replacement);
@@ -58,14 +70,35 @@ const SMART_TV_POLYFILL_SCRIPT = `
     }
     if (!Array.prototype.at) {
       Array.prototype.at = function(n) {
-        n = Math.trunc(n) || 0;
+        n = Math.trunc ? Math.trunc(n) : parseInt(n, 10) || 0;
         if (n < 0) n += this.length;
         return (n < 0 || n >= this.length) ? undefined : this[n];
       };
     }
+    if (!Array.prototype.flat) {
+      Array.prototype.flat = function(depth) {
+        var d = depth === undefined ? 1 : Number(depth);
+        var result = [];
+        (function flatten(arr, currDepth) {
+          for (var i = 0; i < arr.length; i++) {
+            if (Array.isArray(arr[i]) && currDepth > 0) {
+              flatten(arr[i], currDepth - 1);
+            } else {
+              result.push(arr[i]);
+            }
+          }
+        })(this, d);
+        return result;
+      };
+    }
+    if (!Array.prototype.flatMap) {
+      Array.prototype.flatMap = function(cb, thisArg) {
+        return this.map(cb, thisArg).flat(1);
+      };
+    }
     if (!String.prototype.at) {
       String.prototype.at = function(n) {
-        n = Math.trunc(n) || 0;
+        n = Math.trunc ? Math.trunc(n) : parseInt(n, 10) || 0;
         if (n < 0) n += this.length;
         return (n < 0 || n >= this.length) ? undefined : this.charAt(n);
       };
@@ -90,10 +123,57 @@ const SMART_TV_POLYFILL_SCRIPT = `
         return { observe: function(){}, unobserve: function(){}, disconnect: function(){} };
       };
     }
+    if (typeof IntersectionObserver === 'undefined') {
+      window.IntersectionObserver = function() {
+        return { observe: function(){}, unobserve: function(){}, disconnect: function(){}, takeRecords: function(){ return []; } };
+      };
+    }
+    var origMatchMedia = window.matchMedia;
+    window.matchMedia = function(query) {
+      var mql = origMatchMedia ? origMatchMedia.call(window, query) : null;
+      if (!mql) {
+        mql = {
+          matches: false,
+          media: query || '',
+          onchange: null,
+          addListener: function() {},
+          removeListener: function() {},
+          addEventListener: function() {},
+          removeEventListener: function() {},
+          dispatchEvent: function() { return false; }
+        };
+      } else {
+        if (!mql.addEventListener) {
+          mql.addEventListener = function(type, listener) {
+            if (type === 'change' && mql.addListener) mql.addListener(listener);
+          };
+        }
+        if (!mql.removeEventListener) {
+          mql.removeEventListener = function(type, listener) {
+            if (type === 'change' && mql.removeListener) mql.removeListener(listener);
+          };
+        }
+        if (!mql.addListener) {
+          mql.addListener = function(listener) {
+            if (mql.addEventListener) mql.addEventListener('change', listener);
+          };
+        }
+        if (!mql.removeListener) {
+          mql.removeListener = function(listener) {
+            if (mql.removeEventListener) mql.removeEventListener('change', listener);
+          };
+        }
+      }
+      return mql;
+    };
 
     var bootFailed = false;
     function showTvFallback() {
       if (bootFailed) return;
+      if (window.__TV_REACT_HYDRATED__ || window.__TV_LEGACY_ACTIVE__) return;
+      if (typeof window.__startLegacyTvSlideshow === 'function') {
+        if (window.__startLegacyTvSlideshow()) return;
+      }
       var root = document.querySelector('[data-tv-slideshow-mounted="1"]');
       if (root) return;
       bootFailed = true;
@@ -105,7 +185,7 @@ const SMART_TV_POLYFILL_SCRIPT = `
       }
     }
 
-    window.addEventListener('error', function(e) {
+    window.addEventListener('error', function() {
       if (window.location && window.location.pathname.indexOf('/publicidad') !== -1) {
         setTimeout(showTvFallback, 2500);
       }

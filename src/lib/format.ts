@@ -1,30 +1,37 @@
 import type { Language } from '@/i18n/types';
 
-const currency = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 0,
-});
+function formatThousands(value: number, decimals = 0): string {
+  const safe = Number.isFinite(value) ? value : 0;
+  const fixed = safe.toFixed(decimals);
+  const parts = fixed.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+}
 
-const currencyPrecise = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD',
-  maximumFractionDigits: 2,
-});
+export const formatPrice = (value: number): string => {
+  return `$${formatThousands(Math.round(value), 0)}`;
+};
 
-const compact = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
-const decimal = new Intl.NumberFormat('en-US');
+export const formatMoney = (value: number): string => {
+  return `$${formatThousands(value, 2)}`;
+};
 
-export const formatPrice = (value: number) => currency.format(value);
-export const formatMoney = (value: number) => currencyPrecise.format(value);
-export const formatCompact = (value: number) => compact.format(value);
-export const formatNumber = (value: number) => decimal.format(value);
+export const formatCompact = (value: number): string => {
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, '')}M`;
+  if (abs >= 1_000) return `${(value / 1_000).toFixed(1).replace(/\.0$/, '')}K`;
+  return formatThousands(value, 0);
+};
+
+export const formatNumber = (value: number): string => {
+  return formatThousands(Math.round(value), 0);
+};
 
 export function formatArea(value: number, lang: Language = 'es') {
   if (lang === 'es') {
-    return `${decimal.format(value)} m²`;
+    return `${formatNumber(value)} m²`;
   }
-  return `${decimal.format(value)} sq ft`;
+  return `${formatNumber(value)} sq ft`;
 }
 
 export function formatListingPrice(
@@ -33,17 +40,21 @@ export function formatListingPrice(
   lang: Language = 'es',
 ) {
   if (period === 'month') {
-    return lang === 'es' ? `${currency.format(price)}/mes` : `${currency.format(price)}/mo`;
+    return lang === 'es' ? `${formatPrice(price)}/mes` : `${formatPrice(price)}/mo`;
   }
-  return currency.format(price);
+  return formatPrice(price);
 }
 
 export function formatDate(iso: string, lang: Language = 'es') {
-  return new Date(iso).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  try {
+    return new Date(iso).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  } catch {
+    return iso.slice(0, 10);
+  }
 }
 
 export function relativeTime(iso: string, lang: Language = 'es') {

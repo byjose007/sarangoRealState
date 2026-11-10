@@ -4,10 +4,12 @@ import { cities } from '@/data/reference';
 import { siteConfig } from '@/constants/site';
 import {
   PropertySlideshow,
+  type SlideshowContact,
   type SlideshowFormat,
   type SlideshowProperty,
   type SlideshowWeather,
 } from '@/components/slideshow/property-slideshow';
+import { LegacyTvSlideshowFallback } from '@/components/slideshow/legacy-tv-player';
 
 export const metadata: Metadata = {
   title: 'Publicidad',
@@ -112,27 +114,39 @@ export default async function PublicidadPage({ searchParams }: PageProps) {
     }));
 
   const siteHost = siteConfig.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  const intervalMs = intervalSeconds * 1000;
+  const contact: SlideshowContact = {
+    name: siteConfig.name,
+    tagline: siteConfig.tagline,
+    phone: siteConfig.phone,
+    whatsapp: siteConfig.whatsapp,
+    site: siteHost,
+    url: siteConfig.url.replace(/\/$/, ''),
+    hours: siteConfig.hours,
+    officeCity: office?.city ?? 'Cuenca',
+    officeAddress: office?.address ?? 'Cuenca, Ecuador',
+    coordinates: coords,
+  };
 
   return (
-    <PropertySlideshow
-      properties={slides}
-      intervalMs={intervalSeconds * 1000}
-      showBrandSlide={showBrandSlide}
-      showPromoSlides={showPromoSlides}
-      initialFormat={initialFormat}
-      initialWeather={initialWeather}
-      contact={{
-        name: siteConfig.name,
-        tagline: siteConfig.tagline,
-        phone: siteConfig.phone,
-        whatsapp: siteConfig.whatsapp,
-        site: siteHost,
-        url: siteConfig.url.replace(/\/$/, ''),
-        hours: siteConfig.hours,
-        officeCity: office?.city ?? 'Cuenca',
-        officeAddress: office?.address ?? 'Cuenca, Ecuador',
-        coordinates: coords,
-      }}
-    />
+    <>
+      <PropertySlideshow
+        properties={slides}
+        intervalMs={intervalMs}
+        showBrandSlide={showBrandSlide}
+        showPromoSlides={showPromoSlides}
+        initialFormat={initialFormat}
+        initialWeather={initialWeather}
+        contact={contact}
+      />
+      <LegacyTvSlideshowFallback
+        properties={slides}
+        intervalMs={intervalMs}
+        showBrandSlide={showBrandSlide}
+        showPromoSlides={showPromoSlides}
+        initialWeather={initialWeather}
+        contact={contact}
+      />
+    </>
   );
 }

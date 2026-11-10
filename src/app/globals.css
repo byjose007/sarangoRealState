@@ -227,6 +227,34 @@
   }
 }
 
+@keyframes slideshow-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideshow-fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.slideshow-bg-fade {
+  animation: slideshow-fade-in 1.2s ease-in-out both;
+}
+
+.slideshow-content-enter {
+  animation: slideshow-fade-up 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* Smooth horizontal marquee for long titles on /publicidad digital signage.
    Holds briefly at the start so passersby read the first words, then slides
    left across the full first copy + separator (-50% of the doubled track). */

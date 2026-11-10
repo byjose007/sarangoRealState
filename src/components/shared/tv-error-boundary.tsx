@@ -29,6 +29,14 @@ export class TvErrorBoundary extends React.Component<TvErrorBoundaryProps, TvErr
     if (typeof console !== 'undefined' && console.error) {
       console.error('[TvErrorBoundary] Render error on display:', error, errorInfo);
     }
+    try {
+      const win = window as unknown as { __startLegacyTvSlideshow?: () => boolean };
+      if (typeof win.__startLegacyTvSlideshow === 'function') {
+        win.__startLegacyTvSlideshow();
+      }
+    } catch {
+      // ignore
+    }
   }
 
   render() {

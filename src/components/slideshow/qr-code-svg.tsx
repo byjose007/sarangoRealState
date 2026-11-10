@@ -248,23 +248,24 @@ interface QrCodeSvgProps {
   className?: string;
 }
 
-export function QrCodeSvg({ value, className }: QrCodeSvgProps) {
-  const matrix = React.useMemo(() => encodeQrMatrix(value), [value]);
+export function generateQrSvgData(value: string): { total: number; pathData: string } {
+  const matrix = encodeQrMatrix(value);
   const size = matrix.length;
   const quietZone = 3;
   const total = size + quietZone * 2;
-
-  const pathData = React.useMemo(() => {
-    const parts: string[] = [];
-    for (let r = 0; r < size; r++) {
-      for (let c = 0; c < size; c++) {
-        if (matrix[r][c]) {
-          parts.push(`M${c + quietZone},${r + quietZone}h1v1h-1z`);
-        }
+  const parts: string[] = [];
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (matrix[r][c]) {
+        parts.push(`M${c + quietZone},${r + quietZone}h1v1h-1z`);
       }
     }
-    return parts.join('');
-  }, [matrix, size]);
+  }
+  return { total, pathData: parts.join('') };
+}
+
+export function QrCodeSvg({ value, className }: QrCodeSvgProps) {
+  const { total, pathData } = React.useMemo(() => generateQrSvgData(value), [value]);
 
   return (
     <svg
