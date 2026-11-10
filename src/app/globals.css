@@ -246,7 +246,10 @@
   width: max-content;
   will-change: transform;
   animation: slideshow-title-marquee var(--marquee-duration, 11s) linear infinite;
-  @media (prefers-reduced-motion: reduce) {
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slideshow-marquee-track {
     animation: none;
   }
 }

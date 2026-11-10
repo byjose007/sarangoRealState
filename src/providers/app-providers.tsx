@@ -5,6 +5,7 @@ import { ThemeProvider } from 'next-themes';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { LanguageProvider } from '@/i18n/context';
+import { TvErrorBoundary } from '@/components/shared/tv-error-boundary';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const [client] = React.useState(
@@ -17,20 +18,26 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <LanguageProvider>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-        <QueryClientProvider client={client}>
-          {children}
-          <Toaster
-            position="bottom-right"
-            toastOptions={{
-              className:
-                'rounded-sm border border-border bg-card text-card-foreground font-sans text-sm',
-            }}
-          />
-        </QueryClientProvider>
-      </ThemeProvider>
-    </LanguageProvider>
+    <TvErrorBoundary>
+      <LanguageProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryClientProvider client={client}>
+            {children}
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                className:
+                  'rounded-sm border border-border bg-card text-card-foreground font-sans text-sm',
+              }}
+            />
+          </QueryClientProvider>
+        </ThemeProvider>
+      </LanguageProvider>
+    </TvErrorBoundary>
   );
 }
-

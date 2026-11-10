@@ -63,7 +63,9 @@ function rsEncode(data: Uint8Array, ecLen: number): Uint8Array {
   const rem = new Uint8Array(ecLen);
   for (let i = 0; i < data.length; i++) {
     const factor = data[i] ^ rem[0];
-    rem.copyWithin(0, 1);
+    for (let k = 0; k < ecLen - 1; k++) {
+      rem[k] = rem[k + 1];
+    }
     rem[ecLen - 1] = 0;
     if (factor !== 0) {
       for (let j = 0; j < ecLen; j++) {
@@ -74,8 +76,20 @@ function rsEncode(data: Uint8Array, ecLen: number): Uint8Array {
   return rem;
 }
 
+function toUtf8Bytes(text: string): Uint8Array {
+  if (typeof TextEncoder !== 'undefined') {
+    return new TextEncoder().encode(text);
+  }
+  const encoded = unescape(encodeURIComponent(text));
+  const bytes = new Uint8Array(encoded.length);
+  for (let i = 0; i < encoded.length; i++) {
+    bytes[i] = encoded.charCodeAt(i);
+  }
+  return bytes;
+}
+
 function encodeQrMatrix(text: string): boolean[][] {
-  const bytes = new TextEncoder().encode(text);
+  const bytes = toUtf8Bytes(text);
   const info =
     VERSIONS.find((v) => bytes.length + 2 <= v.dataCodewords) ?? VERSIONS[VERSIONS.length - 1];
   const payload = bytes.slice(0, info.dataCodewords - 2);

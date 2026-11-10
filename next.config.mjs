@@ -19,7 +19,7 @@ const csp = [
   // production — see https://react.dev) — allow it only outside prod so
   // `next dev` doesn't trip the policy on every page.
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'production' ? '' : " 'unsafe-eval'"}`,
-  "connect-src 'self'",
+  "connect-src 'self' https://api.open-meteo.com",
   "frame-src https://www.google.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com",
 ].join('; ');
 

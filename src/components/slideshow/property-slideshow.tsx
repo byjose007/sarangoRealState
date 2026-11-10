@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -22,6 +23,7 @@ import {
   CloudRain,
   CloudSun,
   Droplets,
+  ExternalLink,
   FileCheck2,
   Globe,
   Handshake,
@@ -29,6 +31,7 @@ import {
   MapPin,
   Maximize,
   Megaphone,
+  MessageCircle,
   Minimize,
   Monitor,
   Moon,
@@ -140,11 +143,11 @@ const PROMO_CAMPAIGNS: PromoCampaign[] = [
     badge: '¿Deseas vender o alquilar?',
     title: 'Vendemos o alquilamos tu propiedad sin sorpresas ocultas',
     subtitle:
-      'Medimos cada plano, producimos fotografía profesional, exhibimos tu inmueble en pantallas comerciales y filtramos compradores reales.',
+      'Medimos cada plano, producimos fotografía profesional, exhibimos tu inmueble en puntos estratégicos y filtramos compradores reales.',
     ctaLabel: 'Consigna tu propiedad por WhatsApp',
     whatsappText:
-      'Hola Sarango Real Estate, vi la pantalla en el centro comercial y deseo información para vender o alquilar mi propiedad.',
-    backgroundImage: '/images/sarango-office.webp',
+      'Hola Sarango Real Estate, deseo información para vender o alquilar mi propiedad.',
+    backgroundImage: '/images/sarango-office.jpg',
     highlights: [
       {
         icon: FileCheck2,
@@ -154,7 +157,7 @@ const PROMO_CAMPAIGNS: PromoCampaign[] = [
       {
         icon: TrendingUp,
         title: 'Máxima Exposición Comercial',
-        detail: 'Presencia en pantallas de alto tráfico, portal web y redes sociales.',
+        detail: 'Presencia en pantallas digitales, portal web y redes sociales.',
       },
       {
         icon: Handshake,
@@ -171,9 +174,8 @@ const PROMO_CAMPAIGNS: PromoCampaign[] = [
     subtitle:
       'Cada propiedad de nuestro catálogo ha sido inspeccionada y documentada previamente para que tomes decisiones con total certeza.',
     ctaLabel: 'Solicita asesoría personalizada',
-    whatsappText:
-      'Hola Sarango Real Estate, vi la pantalla en el centro comercial y busco asesoría para comprar o alquilar una propiedad.',
-    backgroundImage: '/images/sarango-meeting-room.webp',
+    whatsappText: 'Hola Sarango Real Estate, busco asesoría para comprar o alquilar una propiedad.',
+    backgroundImage: '/images/sarango-meeting-room.jpg',
     highlights: [
       {
         icon: ShieldCheck,
@@ -277,18 +279,42 @@ export function PropertySlideshow({
   const [failedUrls, setFailedUrls] = React.useState<Record<string, true>>({});
   const [formatMode, setFormatMode] = React.useState<SlideshowFormat>(initialFormat);
   const [viewportPortrait, setViewportPortrait] = React.useState(false);
+  const [isMobileDevice, setIsMobileDevice] = React.useState(false);
+  const touchStartRef = React.useRef<{ x: number; y: number } | null>(null);
 
-  // Detect physical portrait orientation for 9:16 mall digital totems.
+  // Detect physical portrait orientation (9:16 totems) and mobile phone screens (< 768px).
+  // Uses addListener fallback for older Smart TV browsers (LG webOS / Samsung Tizen).
   React.useEffect(() => {
-    const mql = window.matchMedia('(orientation: portrait)');
-    const onChange = () => setViewportPortrait(mql.matches);
+    if (typeof window.matchMedia !== 'function') return;
+    const portraitMql = window.matchMedia('(orientation: portrait)');
+    const mobileMql = window.matchMedia('(max-width: 767px)');
+    const onChange = () => {
+      setViewportPortrait(portraitMql.matches);
+      setIsMobileDevice(mobileMql.matches);
+    };
     onChange();
-    mql.addEventListener('change', onChange);
-    return () => mql.removeEventListener('change', onChange);
+
+    const subscribe = (mql: MediaQueryList) => {
+      if (typeof mql.addEventListener === 'function') {
+        mql.addEventListener('change', onChange);
+        return () => mql.removeEventListener('change', onChange);
+      }
+      mql.addListener(onChange);
+      return () => mql.removeListener(onChange);
+    };
+
+    const unsubPortrait = subscribe(portraitMql);
+    const unsubMobile = subscribe(mobileMql);
+    return () => {
+      unsubPortrait();
+      unsubMobile();
+    };
   }, []);
 
-  const isPortrait = formatMode === 'portrait' || (formatMode === 'auto' && viewportPortrait);
-  const isSimulatedPortrait = formatMode === 'portrait' && !viewportPortrait;
+  const isPortrait =
+    formatMode === 'portrait' || (formatMode === 'auto' && (viewportPortrait || isMobileDevice));
+  const isSimulatedPortrait = formatMode === 'portrait' && !viewportPortrait && !isMobileDevice;
+  const isMobile = isMobileDevice && !isSimulatedPortrait;
 
   // The list can shrink after a refresh — never point past its end.
   const index = totalSlides ? rawIndex % totalSlides : 0;
@@ -426,7 +452,7 @@ export function PropertySlideshow({
   const qrUrl = React.useMemo(() => {
     if (slide) {
       return whatsappDigits
-        ? `https://wa.me/${whatsappDigits}?text=${encodeURIComponent(`Hola, vi en pantalla la propiedad Ref. ${slide.reference}`)}`
+        ? `https://wa.me/${whatsappDigits}?text=${encodeURIComponent(`Hola, me interesa la propiedad Ref. ${slide.reference}`)}`
         : `${contact.url || `https://${contact.site}`}/properties/${slide.slug}`;
     }
     if (promo) {
@@ -435,7 +461,7 @@ export function PropertySlideshow({
         : contact.url || `https://${contact.site}`;
     }
     return whatsappDigits
-      ? `https://wa.me/${whatsappDigits}?text=${encodeURIComponent('Hola, vi su pantalla en el centro comercial y deseo información')}`
+      ? `https://wa.me/${whatsappDigits}?text=${encodeURIComponent('Hola Sarango Real Estate, deseo recibir información sobre sus propiedades disponibles.')}`
       : contact.url || `https://${contact.site}`;
   }, [slide, promo, whatsappDigits, contact.url, contact.site]);
 
@@ -452,14 +478,40 @@ export function PropertySlideshow({
         ? 'Destacado'
         : 'Institucional';
 
+  const handleTouchStart = React.useCallback((event: React.TouchEvent) => {
+    const touch = event.touches[0];
+    if (!touch) return;
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+    setControlsVisible(true);
+  }, []);
+
+  const handleTouchEnd = React.useCallback(
+    (event: React.TouchEvent) => {
+      const start = touchStartRef.current;
+      touchStartRef.current = null;
+      const touch = event.changedTouches[0];
+      if (!start || !touch) return;
+      const dx = touch.clientX - start.x;
+      const dy = touch.clientY - start.y;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.25) {
+        if (dx < 0) go(index + 1);
+        else go(index - 1);
+      }
+    },
+    [go, index],
+  );
+
   return (
     <div
       ref={rootRef}
+      data-tv-slideshow-mounted="1"
       onMouseMove={() => setControlsVisible(true)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       onDoubleClick={toggleFullscreen}
       className={cn(
-        'fixed inset-0 select-none overflow-hidden bg-[#050807] text-white',
-        !controlsVisible && 'cursor-none',
+        'fixed inset-0 touch-pan-y select-none overflow-hidden bg-[#050807] text-white',
+        !controlsVisible && !isMobile && 'cursor-none',
         isSimulatedPortrait && 'grid place-items-center',
       )}
     >
@@ -471,13 +523,13 @@ export function PropertySlideshow({
         />
       ) : null}
 
-      {/* Stage container: fills 100dvw/100dvh normally, or frames a 9:16 totem when previewed on desktop */}
+      {/* Stage container: fills 100vw/100vh + 100dvw/100dvh, or frames a 9:16 totem when previewed on desktop */}
       <div
         className={cn(
           'relative overflow-hidden bg-[#0A0F0D]',
           isSimulatedPortrait
-            ? 'aspect-[9/16] h-[96dvh] max-w-[96dvw] rounded-[2rem] border border-white/20 shadow-[0_0_90px_rgba(0,0,0,0.9)]'
-            : 'h-dvh w-dvw',
+            ? 'aspect-[9/16] h-[96dvh] h-[96vh] max-w-[96dvw] max-w-[96vw] rounded-[2rem] border border-white/20 shadow-[0_0_90px_rgba(0,0,0,0.9)]'
+            : 'h-dvh h-screen w-dvw w-screen',
         )}
       >
         {/* ── Background Layer ───────────────────────────────────────── */}
@@ -615,52 +667,66 @@ export function PropertySlideshow({
           </>
         )}
 
-        {/* ── Top Bar: Brand Identity + Live Mall Info (Weather, Time, Slide) ── */}
+        {/* ── Top Bar: Brand Identity + Live Info (Weather, Time, Slide) ── */}
         <header
           className={cn(
-            'absolute inset-x-0 top-0 z-10 flex items-center justify-between',
-            isPortrait ? 'px-5 pt-4' : 'px-[4vw] pt-[2.8vh]',
+            'absolute inset-x-0 top-0 z-10 flex items-center justify-between gap-2',
+            isMobile
+              ? 'px-3.5 pt-[max(0.75rem,env(safe-area-inset-top))]'
+              : isPortrait
+                ? 'px-5 pt-4'
+                : 'px-[4vw] pt-[2.8vh]',
           )}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2.5">
             <Image
               src="/images/logo-sarango-real.jpeg"
               alt={contact.name}
               width={96}
               height={96}
               className={cn(
-                'rounded-full object-cover shadow-lg ring-2 ring-[hsl(38_52%_60%/0.65)]',
-                isPortrait ? 'size-11' : 'size-[4.2vw] min-h-11 min-w-11',
+                'shrink-0 rounded-full object-cover shadow-lg ring-2 ring-[hsl(38_52%_60%/0.65)]',
+                isMobile ? 'size-9' : isPortrait ? 'size-11' : 'size-[4.2vw] min-h-11 min-w-11',
               )}
             />
-            <div className="leading-tight">
+            <div className="min-w-0 leading-tight">
               <p
                 className={cn(
-                  'font-display font-semibold tracking-tight text-white drop-shadow',
-                  isPortrait
-                    ? 'text-[clamp(1rem,2.4vmin,1.35rem)]'
-                    : 'text-[clamp(1.1rem,1.75vw,2.2rem)]',
+                  'truncate font-display font-semibold tracking-tight text-white drop-shadow',
+                  isMobile
+                    ? 'text-sm'
+                    : isPortrait
+                      ? 'text-[clamp(1rem,2.4vmin,1.35rem)]'
+                      : 'text-[clamp(1.1rem,1.75vw,2.2rem)]',
                 )}
               >
                 {contact.name}
               </p>
               <p
                 className={cn(
-                  'font-medium uppercase tracking-[0.22em] text-[hsl(38_52%_60%)]',
-                  isPortrait
-                    ? 'text-[clamp(0.58rem,1.2vmin,0.75rem)]'
-                    : 'text-[clamp(0.65rem,0.85vw,1.05rem)]',
+                  'truncate font-medium uppercase tracking-[0.2em] text-[hsl(38_52%_60%)]',
+                  isMobile
+                    ? 'text-[0.55rem]'
+                    : isPortrait
+                      ? 'text-[clamp(0.58rem,1.2vmin,0.75rem)]'
+                      : 'text-[clamp(0.65rem,0.85vw,1.05rem)]',
                 )}
               >
-                Bienes raíces · {contact.officeCity ?? 'Cuenca'}
+                {isMobile
+                  ? (contact.officeCity ?? 'Cuenca')
+                  : `Bienes raíces · ${contact.officeCity ?? 'Cuenca'}`}
               </p>
             </div>
           </div>
 
           <div
             className={cn(
-              'flex items-center rounded-2xl border border-white/15 bg-black/60 shadow-2xl backdrop-blur-md',
-              isPortrait ? 'gap-2.5 px-3 py-1.5' : 'gap-[1.4vw] px-[1.5vw] py-[1vh]',
+              'flex shrink-0 items-center rounded-2xl border border-white/15 bg-black/60 shadow-2xl backdrop-blur-md',
+              isMobile
+                ? 'gap-2 px-2.5 py-1'
+                : isPortrait
+                  ? 'gap-2.5 px-3 py-1.5'
+                  : 'gap-[1.4vw] px-[1.5vw] py-[1vh]',
             )}
           >
             <WeatherWidget
@@ -668,27 +734,34 @@ export function PropertySlideshow({
               coordinates={contact.coordinates ?? { lat: -2.9001, lng: -79.0059 }}
               initialWeather={initialWeather}
               compact={isPortrait}
+              ultraCompact={isMobile}
             />
-            <span className="h-6 w-px bg-white/15" aria-hidden />
-            <ClockWidget compact={isPortrait} />
-            <span className="h-6 w-px bg-white/15" aria-hidden />
+            <span className={cn('w-px bg-white/15', isMobile ? 'h-4' : 'h-6')} aria-hidden />
+            <ClockWidget compact={isPortrait} ultraCompact={isMobile} />
+            <span className={cn('w-px bg-white/15', isMobile ? 'h-4' : 'h-6')} aria-hidden />
             <div className="flex flex-col items-end leading-tight">
-              <span
-                className={cn(
-                  'font-semibold uppercase tracking-[0.2em] text-white/50',
-                  isPortrait ? 'text-[0.55rem]' : 'text-[clamp(0.55rem,0.68vw,0.85rem)]',
-                )}
-              >
-                {kindLabel}
-              </span>
+              {!isMobile ? (
+                <span
+                  className={cn(
+                    'font-semibold uppercase tracking-[0.2em] text-white/50',
+                    isPortrait ? 'text-[0.55rem]' : 'text-[clamp(0.55rem,0.68vw,0.85rem)]',
+                  )}
+                >
+                  {kindLabel}
+                </span>
+              ) : null}
               <span
                 className={cn(
                   'font-mono font-semibold tabular-nums text-white',
-                  isPortrait ? 'text-xs' : 'text-[clamp(0.85rem,1.2vw,1.5rem)]',
+                  isMobile
+                    ? 'text-[0.7rem]'
+                    : isPortrait
+                      ? 'text-xs'
+                      : 'text-[clamp(0.85rem,1.2vw,1.5rem)]',
                 )}
               >
                 {String(index + 1).padStart(2, '0')}
-                <span className="text-white/40"> / {String(totalSlides).padStart(2, '0')}</span>
+                <span className="text-white/40">/{String(totalSlides).padStart(2, '0')}</span>
               </span>
             </div>
           </div>
@@ -703,6 +776,7 @@ export function PropertySlideshow({
               qrUrl={qrUrl}
               propertyCount={properties.length}
               isPortrait={isPortrait}
+              isMobile={isMobile}
             />
           ) : currentItem.kind === 'promo' && promo ? (
             <PromoInterstitialSlide
@@ -711,6 +785,7 @@ export function PropertySlideshow({
               contact={contact}
               qrUrl={qrUrl}
               isPortrait={isPortrait}
+              isMobile={isMobile}
             />
           ) : slide ? (
             <PropertySlideView
@@ -722,6 +797,7 @@ export function PropertySlideshow({
               paused={paused}
               intervalMs={intervalMs}
               isPortrait={isPortrait}
+              isMobile={isMobile}
             />
           ) : null}
         </AnimatePresence>
@@ -730,7 +806,11 @@ export function PropertySlideshow({
         <footer
           className={cn(
             'absolute inset-x-0 bottom-0 z-10',
-            isPortrait ? 'px-5 pb-3.5' : 'px-[4vw] pb-[3.2vh]',
+            isMobile
+              ? 'px-3.5 pb-[max(0.65rem,env(safe-area-inset-bottom))]'
+              : isPortrait
+                ? 'px-5 pb-3.5'
+                : 'px-[4vw] pb-[3.2vh]',
           )}
         >
           <div
@@ -859,6 +939,7 @@ function PropertySlideView({
   paused,
   intervalMs,
   isPortrait,
+  isMobile,
 }: {
   slide: SlideshowProperty;
   specs: ReturnType<typeof buildSpecs>;
@@ -867,6 +948,7 @@ function PropertySlideView({
   paused: boolean;
   intervalMs: number;
   isPortrait: boolean;
+  isMobile: boolean;
 }) {
   if (isPortrait) {
     return (
@@ -878,10 +960,13 @@ function PropertySlideView({
           visible: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } },
           exit: { opacity: 0, transition: { duration: 0.4 } },
         }}
-        className="absolute inset-x-5 bottom-14 top-[42%] z-10 flex flex-col justify-between"
+        className={cn(
+          'absolute z-10 flex flex-col justify-between',
+          isMobile ? 'inset-x-3.5 bottom-12 top-[39%]' : 'inset-x-5 bottom-14 top-[42%]',
+        )}
       >
         <div>
-          <motion.div variants={ITEM} className="mb-2.5 flex flex-wrap items-center gap-1.5">
+          <motion.div variants={ITEM} className="mb-2 flex flex-wrap items-center gap-1.5">
             <Pill isPortrait className="bg-[hsl(38_52%_60%)] text-[hsl(40_40%_10%)]">
               {getStatusLabel(slide.status, 'es')}
             </Pill>
@@ -914,7 +999,7 @@ function PropertySlideView({
 
           <motion.p
             variants={ITEM}
-            className="mt-1.5 flex items-center gap-1.5 text-[clamp(0.9rem,2vmin,1.15rem)] font-medium text-white/85"
+            className="mt-1 flex items-center gap-1.5 text-[clamp(0.85rem,2vmin,1.1rem)] font-medium text-white/85"
           >
             <MapPin className="size-4 shrink-0 text-[hsl(38_52%_60%)]" />
             <span className="line-clamp-1">
@@ -924,16 +1009,16 @@ function PropertySlideView({
           </motion.p>
 
           {specs.length ? (
-            <motion.ul variants={ITEM} className="mt-3.5 grid grid-cols-3 gap-2">
+            <motion.ul variants={ITEM} className="mt-3 grid grid-cols-3 gap-2">
               {specs.slice(0, 3).map(({ icon: Icon, value, label }) => (
                 <li
                   key={label}
-                  className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-2.5 py-2"
+                  className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.06] px-2.5 py-1.5"
                 >
-                  <Icon className="size-5 shrink-0 text-[hsl(38_52%_60%)]" strokeWidth={1.6} />
+                  <Icon className="size-4 shrink-0 text-[hsl(38_52%_60%)]" strokeWidth={1.6} />
                   <div className="min-w-0 leading-tight">
                     <p className="truncate text-sm font-bold tabular-nums">{value}</p>
-                    <p className="truncate text-[0.62rem] uppercase tracking-[0.14em] text-white/60">
+                    <p className="truncate text-[0.58rem] uppercase tracking-[0.12em] text-white/60">
                       {label}
                     </p>
                   </div>
@@ -942,51 +1027,98 @@ function PropertySlideView({
             </motion.ul>
           ) : null}
 
-          <motion.div variants={ITEM} className="mt-3.5 flex items-baseline justify-between">
-            <p className="font-display text-[clamp(2rem,5.2vmin,3rem)] font-semibold tabular-nums leading-none text-[hsl(38_52%_60%)]">
+          <motion.div variants={ITEM} className="mt-3 flex items-baseline justify-between">
+            <p className="font-display text-[clamp(1.85rem,5.2vmin,2.9rem)] font-semibold tabular-nums leading-none text-[hsl(38_52%_60%)]">
               {formatListingPrice(slide.price, slide.pricePeriod, 'es')}
             </p>
             <span className="font-mono text-xs text-white/55">Ref. {slide.reference}</span>
           </motion.div>
         </div>
 
-        {/* Bottom Totem CTA + QR Card */}
-        <motion.aside
-          variants={ITEM}
-          className="flex items-center justify-between gap-4 rounded-2xl border border-white/20 bg-black/70 p-3.5 shadow-2xl backdrop-blur-xl"
-        >
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <Image
-                src="/images/logo-sarango-real.jpeg"
-                alt=""
-                width={32}
-                height={32}
-                className="size-6 rounded-full ring-1 ring-[hsl(38_52%_60%/0.6)]"
-              />
-              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[hsl(38_52%_60%)]">
-                Agenda tu visita hoy
+        {/* Bottom CTA: Direct Touch Buttons on Mobile Phone vs QR Code on Digital Totem */}
+        {isMobile ? (
+          <motion.aside
+            variants={ITEM}
+            className="rounded-2xl border border-white/20 bg-black/75 p-3 shadow-2xl backdrop-blur-xl"
+          >
+            <div className="mb-2.5 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Image
+                  src="/images/logo-sarango-real.jpeg"
+                  alt=""
+                  width={28}
+                  height={28}
+                  className="size-6 rounded-full ring-1 ring-[hsl(38_52%_60%/0.6)]"
+                />
+                <span className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-[hsl(38_52%_60%)]">
+                  Agenda tu visita
+                </span>
+              </div>
+              <a
+                href={`tel:${contact.phone.replace(/\s+/g, '')}`}
+                className="flex items-center gap-1 text-xs font-semibold tabular-nums text-white/90"
+              >
+                <Phone className="size-3.5 text-[hsl(38_52%_60%)]" />
+                {contact.phone}
+              </a>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href={qrUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-1.5 rounded-xl bg-[hsl(38_52%_60%)] px-3 py-2.5 text-xs font-bold uppercase tracking-wider text-[hsl(40_40%_10%)] shadow-md active:scale-[0.98]"
+              >
+                <MessageCircle className="size-4" />
+                WhatsApp
+              </a>
+              <Link
+                href={`/properties/${slide.slug}`}
+                className="flex items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-white active:scale-[0.98]"
+              >
+                <ExternalLink className="size-3.5 text-[hsl(38_52%_60%)]" />
+                Ver ficha
+              </Link>
+            </div>
+          </motion.aside>
+        ) : (
+          <motion.aside
+            variants={ITEM}
+            className="flex items-center justify-between gap-4 rounded-2xl border border-white/20 bg-black/70 p-3.5 shadow-2xl backdrop-blur-xl"
+          >
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <Image
+                  src="/images/logo-sarango-real.jpeg"
+                  alt=""
+                  width={32}
+                  height={32}
+                  className="size-6 rounded-full ring-1 ring-[hsl(38_52%_60%/0.6)]"
+                />
+                <span className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[hsl(38_52%_60%)]">
+                  Agenda tu visita hoy
+                </span>
+              </div>
+              <p className="mt-1.5 flex items-center gap-2 text-[clamp(1.1rem,2.6vmin,1.45rem)] font-bold tabular-nums text-white">
+                <Phone className="size-4 shrink-0 text-[hsl(38_52%_60%)]" />
+                <span className="truncate">{contact.phone}</span>
+              </p>
+              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-white/75">
+                <Globe className="size-3.5 shrink-0 text-[hsl(38_52%_60%)]" />
+                <span className="truncate">{contact.site}</span>
+              </p>
+            </div>
+
+            <div className="flex shrink-0 flex-col items-center gap-1">
+              <div className="rounded-xl bg-white p-1.5 shadow-lg ring-2 ring-[hsl(38_52%_60%/0.55)]">
+                <QrCodeSvg value={qrUrl} className="size-20" />
+              </div>
+              <span className="text-[0.58rem] font-semibold uppercase tracking-[0.16em] text-[hsl(38_52%_65%)]">
+                Escanea el QR
               </span>
             </div>
-            <p className="mt-1.5 flex items-center gap-2 text-[clamp(1.1rem,2.6vmin,1.45rem)] font-bold tabular-nums text-white">
-              <Phone className="size-4 shrink-0 text-[hsl(38_52%_60%)]" />
-              <span className="truncate">{contact.phone}</span>
-            </p>
-            <p className="mt-0.5 flex items-center gap-1.5 text-xs text-white/75">
-              <Globe className="size-3.5 shrink-0 text-[hsl(38_52%_60%)]" />
-              <span className="truncate">{contact.site}</span>
-            </p>
-          </div>
-
-          <div className="flex shrink-0 flex-col items-center gap-1">
-            <div className="rounded-xl bg-white p-1.5 shadow-lg ring-2 ring-[hsl(38_52%_60%/0.55)]">
-              <QrCodeSvg value={qrUrl} className="size-20" />
-            </div>
-            <span className="text-[0.58rem] font-semibold uppercase tracking-[0.16em] text-[hsl(38_52%_65%)]">
-              Escanea el QR
-            </span>
-          </div>
-        </motion.aside>
+          </motion.aside>
+        )}
       </motion.div>
     );
   }
@@ -1141,11 +1273,13 @@ function PromoInterstitialSlide({
   contact,
   qrUrl,
   isPortrait,
+  isMobile,
 }: {
   promo: PromoCampaign;
   contact: PropertySlideshowProps['contact'];
   qrUrl: string;
   isPortrait: boolean;
+  isMobile: boolean;
 }) {
   return (
     <motion.section
@@ -1158,9 +1292,11 @@ function PromoInterstitialSlide({
       }}
       className={cn(
         'absolute z-10',
-        isPortrait
-          ? 'inset-x-5 bottom-14 top-20 flex flex-col justify-between gap-4'
-          : 'inset-x-[4vw] bottom-[11.5vh] top-[14vh] grid grid-cols-12 items-center gap-[3vw]',
+        isMobile
+          ? 'inset-x-3.5 bottom-12 top-16 flex flex-col justify-between gap-3'
+          : isPortrait
+            ? 'inset-x-5 bottom-14 top-20 flex flex-col justify-between gap-4'
+            : 'inset-x-[4vw] bottom-[11.5vh] top-[14vh] grid grid-cols-12 items-center gap-[3vw]',
       )}
     >
       {/* Left / Upper Section: Campaign Message & Value Cards */}
@@ -1189,9 +1325,11 @@ function PromoInterstitialSlide({
           variants={ITEM}
           className={cn(
             'font-display font-semibold leading-[1.06] tracking-tight text-white',
-            isPortrait
-              ? 'mt-3 text-[clamp(1.55rem,3.8vmin,2.25rem)]'
-              : 'mt-[2vh] text-[clamp(2rem,3.4vw,4.2rem)]',
+            isMobile
+              ? 'mt-2.5 text-[clamp(1.35rem,5.2vw,1.85rem)]'
+              : isPortrait
+                ? 'mt-3 text-[clamp(1.55rem,3.8vmin,2.25rem)]'
+                : 'mt-[2vh] text-[clamp(2rem,3.4vw,4.2rem)]',
           )}
         >
           {promo.title}
@@ -1201,9 +1339,11 @@ function PromoInterstitialSlide({
           variants={ITEM}
           className={cn(
             'text-white/80',
-            isPortrait
-              ? 'mt-2 text-[clamp(0.85rem,1.9vmin,1.05rem)] leading-snug'
-              : 'mt-[1.6vh] max-w-[50vw] text-[clamp(1rem,1.3vw,1.65rem)] leading-relaxed',
+            isMobile
+              ? 'mt-1.5 text-xs leading-snug'
+              : isPortrait
+                ? 'mt-2 text-[clamp(0.85rem,1.9vmin,1.05rem)] leading-snug'
+                : 'mt-[1.6vh] max-w-[50vw] text-[clamp(1rem,1.3vw,1.65rem)] leading-relaxed',
           )}
         >
           {promo.subtitle}
@@ -1212,8 +1352,8 @@ function PromoInterstitialSlide({
         <motion.div
           variants={ITEM}
           className={cn(
-            'grid gap-2.5',
-            isPortrait ? 'mt-3.5 grid-cols-1' : 'mt-[3vh] grid-cols-3 gap-[1.2vw]',
+            'grid gap-2',
+            isPortrait ? 'mt-3 grid-cols-1' : 'mt-[3vh] grid-cols-3 gap-[1.2vw]',
           )}
         >
           {promo.highlights.map(({ icon: Icon, title, detail }) => (
@@ -1227,16 +1367,16 @@ function PromoInterstitialSlide({
               <div
                 className={cn(
                   'grid shrink-0 place-items-center rounded-xl bg-[hsl(38_52%_60%/0.2)] text-[hsl(38_52%_65%)]',
-                  isPortrait ? 'size-9' : 'mb-[1vh] size-[2.4vw]',
+                  isPortrait ? 'size-8' : 'mb-[1vh] size-[2.4vw]',
                 )}
               >
-                <Icon className={isPortrait ? 'size-5' : 'size-[1.3vw]'} />
+                <Icon className={isPortrait ? 'size-4' : 'size-[1.3vw]'} />
               </div>
               <div>
                 <h3
                   className={cn(
                     'font-semibold text-white',
-                    isPortrait ? 'text-sm' : 'text-[1.05vw]',
+                    isPortrait ? 'text-xs' : 'text-[1.05vw]',
                   )}
                 >
                   {title}
@@ -1244,7 +1384,9 @@ function PromoInterstitialSlide({
                 <p
                   className={cn(
                     'text-white/65',
-                    isPortrait ? 'text-xs leading-tight' : 'mt-[0.4vh] text-[0.82vw] leading-snug',
+                    isPortrait
+                      ? 'text-[0.7rem] leading-tight'
+                      : 'mt-[0.4vh] text-[0.82vw] leading-snug',
                   )}
                 >
                   {detail}
@@ -1255,91 +1397,120 @@ function PromoInterstitialSlide({
         </motion.div>
       </div>
 
-      {/* Right / Lower Section: QR Action Card */}
-      <motion.div
-        variants={ITEM}
-        className={cn(
-          'tick-frame border border-white/20 bg-black/65 shadow-2xl backdrop-blur-xl',
-          isPortrait
-            ? 'flex items-center justify-between gap-4 rounded-2xl p-4'
-            : 'col-span-5 flex flex-col items-center rounded-[1.6vw] p-[2.2vw] text-center',
-        )}
-      >
-        <div className={cn(isPortrait ? 'min-w-0 flex-1' : 'flex flex-col items-center')}>
-          <div className="flex items-center gap-2">
-            <Image
-              src="/images/logo-sarango-real.jpeg"
-              alt={contact.name}
-              width={48}
-              height={48}
+      {/* Right / Lower Section: Direct Touch Action on Mobile vs QR Card on TV/Totem */}
+      {isMobile ? (
+        <motion.div
+          variants={ITEM}
+          className="rounded-2xl border border-white/20 bg-black/75 p-3.5 shadow-2xl backdrop-blur-xl"
+        >
+          <p className="mb-2.5 text-center font-display text-sm font-semibold text-white">
+            {promo.ctaLabel}
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <a
+              href={qrUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-1.5 rounded-xl bg-[hsl(38_52%_60%)] px-3 py-2.5 text-xs font-bold uppercase tracking-wider text-[hsl(40_40%_10%)] shadow-md active:scale-[0.98]"
+            >
+              <MessageCircle className="size-4" />
+              WhatsApp
+            </a>
+            <Link
+              href="/properties"
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-white active:scale-[0.98]"
+            >
+              <ExternalLink className="size-3.5 text-[hsl(38_52%_60%)]" />
+              Catálogo
+            </Link>
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          variants={ITEM}
+          className={cn(
+            'tick-frame border border-white/20 bg-black/65 shadow-2xl backdrop-blur-xl',
+            isPortrait
+              ? 'flex items-center justify-between gap-4 rounded-2xl p-4'
+              : 'col-span-5 flex flex-col items-center rounded-[1.6vw] p-[2.2vw] text-center',
+          )}
+        >
+          <div className={cn(isPortrait ? 'min-w-0 flex-1' : 'flex flex-col items-center')}>
+            <div className="flex items-center gap-2">
+              <Image
+                src="/images/logo-sarango-real.jpeg"
+                alt={contact.name}
+                width={48}
+                height={48}
+                className={cn(
+                  'rounded-full ring-2 ring-[hsl(38_52%_60%)]',
+                  isPortrait ? 'size-8' : 'size-[3.2vw]',
+                )}
+              />
+              <span
+                className={cn(
+                  'font-semibold uppercase tracking-[0.2em] text-[hsl(38_52%_60%)]',
+                  isPortrait ? 'text-[0.68rem]' : 'text-[0.85vw]',
+                )}
+              >
+                Atención Inmediata
+              </span>
+            </div>
+
+            <h2
               className={cn(
-                'rounded-full ring-2 ring-[hsl(38_52%_60%)]',
-                isPortrait ? 'size-8' : 'size-[3.2vw]',
-              )}
-            />
-            <span
-              className={cn(
-                'font-semibold uppercase tracking-[0.2em] text-[hsl(38_52%_60%)]',
-                isPortrait ? 'text-[0.68rem]' : 'text-[0.85vw]',
+                'font-display font-semibold text-white',
+                isPortrait ? 'mt-1.5 text-base' : 'mt-[1.2vh] text-[1.8vw]',
               )}
             >
-              Atención Inmediata
+              {promo.ctaLabel}
+            </h2>
+
+            <p
+              className={cn(
+                'mt-1.5 flex items-center gap-2 font-bold tabular-nums text-white',
+                isPortrait ? 'text-lg' : 'mt-[1.4vh] justify-center text-[1.9vw]',
+              )}
+            >
+              <Phone
+                className={cn('text-[hsl(38_52%_60%)]', isPortrait ? 'size-4' : 'size-[1.5vw]')}
+              />
+              {contact.phone}
+            </p>
+            <p
+              className={cn(
+                'flex items-center gap-1.5 text-[hsl(38_52%_68%)]',
+                isPortrait ? 'text-xs' : 'mt-[0.5vh] justify-center text-[1.05vw]',
+              )}
+            >
+              <Globe className={isPortrait ? 'size-3.5' : 'size-[1.05vw]'} />
+              {contact.site}
+            </p>
+          </div>
+
+          <div className="flex shrink-0 flex-col items-center gap-1">
+            <div
+              className={cn(
+                'rounded-2xl bg-white shadow-2xl ring-4 ring-[hsl(38_52%_60%/0.55)]',
+                isPortrait ? 'p-1.5' : 'my-[1.8vh] p-[0.65vw]',
+              )}
+            >
+              <QrCodeSvg
+                value={qrUrl}
+                className={isPortrait ? 'size-24' : 'size-[10.5vw] min-h-24 min-w-24'}
+              />
+            </div>
+            <span
+              className={cn(
+                'font-mono uppercase tracking-[0.18em] text-white/65',
+                isPortrait ? 'text-[0.6rem]' : 'text-[0.75vw]',
+              )}
+            >
+              Escanea para WhatsApp
             </span>
           </div>
-
-          <h2
-            className={cn(
-              'font-display font-semibold text-white',
-              isPortrait ? 'mt-1.5 text-base' : 'mt-[1.2vh] text-[1.8vw]',
-            )}
-          >
-            {promo.ctaLabel}
-          </h2>
-
-          <p
-            className={cn(
-              'mt-1.5 flex items-center gap-2 font-bold tabular-nums text-white',
-              isPortrait ? 'text-lg' : 'mt-[1.4vh] justify-center text-[1.9vw]',
-            )}
-          >
-            <Phone
-              className={cn('text-[hsl(38_52%_60%)]', isPortrait ? 'size-4' : 'size-[1.5vw]')}
-            />
-            {contact.phone}
-          </p>
-          <p
-            className={cn(
-              'flex items-center gap-1.5 text-[hsl(38_52%_68%)]',
-              isPortrait ? 'text-xs' : 'mt-[0.5vh] justify-center text-[1.05vw]',
-            )}
-          >
-            <Globe className={isPortrait ? 'size-3.5' : 'size-[1.05vw]'} />
-            {contact.site}
-          </p>
-        </div>
-
-        <div className="flex shrink-0 flex-col items-center gap-1">
-          <div
-            className={cn(
-              'rounded-2xl bg-white shadow-2xl ring-4 ring-[hsl(38_52%_60%/0.55)]',
-              isPortrait ? 'p-1.5' : 'my-[1.8vh] p-[0.65vw]',
-            )}
-          >
-            <QrCodeSvg
-              value={qrUrl}
-              className={isPortrait ? 'size-24' : 'size-[10.5vw] min-h-24 min-w-24'}
-            />
-          </div>
-          <span
-            className={cn(
-              'font-mono uppercase tracking-[0.18em] text-white/65',
-              isPortrait ? 'text-[0.6rem]' : 'text-[0.75vw]',
-            )}
-          >
-            Escanea para WhatsApp
-          </span>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
     </motion.section>
   );
 }
@@ -1458,11 +1629,13 @@ function BrandOutroSlide({
   qrUrl,
   propertyCount,
   isPortrait,
+  isMobile,
 }: {
   contact: PropertySlideshowProps['contact'];
   qrUrl: string;
   propertyCount: number;
   isPortrait: boolean;
+  isMobile: boolean;
 }) {
   const pillars = [
     { icon: Building2, label: 'Compra, Venta y Alquiler Residencial y Comercial' },
@@ -1481,15 +1654,17 @@ function BrandOutroSlide({
       }}
       className={cn(
         'absolute z-10',
-        isPortrait
-          ? 'inset-x-5 bottom-14 top-20 flex flex-col justify-between gap-4'
-          : 'inset-x-[4vw] bottom-[11.5vh] top-[14vh] grid grid-cols-12 items-center gap-[3vw]',
+        isMobile
+          ? 'inset-x-3.5 bottom-12 top-16 flex flex-col justify-between gap-3'
+          : isPortrait
+            ? 'inset-x-5 bottom-14 top-20 flex flex-col justify-between gap-4'
+            : 'inset-x-[4vw] bottom-[11.5vh] top-[14vh] grid grid-cols-12 items-center gap-[3vw]',
       )}
     >
       <div className={cn('flex flex-col justify-center', !isPortrait && 'col-span-7')}>
         <motion.div
           variants={ITEM}
-          className={cn('flex items-center', isPortrait ? 'gap-4' : 'gap-[1.8vw]')}
+          className={cn('flex items-center', isPortrait ? 'gap-3.5' : 'gap-[1.8vw]')}
         >
           <div className="relative shrink-0">
             <div className="absolute -inset-2 rounded-full bg-[hsl(38_52%_60%/0.25)] blur-xl" />
@@ -1500,7 +1675,7 @@ function BrandOutroSlide({
               height={200}
               className={cn(
                 'relative rounded-full object-cover shadow-2xl ring-4 ring-[hsl(38_52%_60%)]',
-                isPortrait ? 'size-20' : 'size-[8.8vw] min-h-24 min-w-24',
+                isMobile ? 'size-16' : isPortrait ? 'size-20' : 'size-[8.8vw] min-h-24 min-w-24',
               )}
             />
           </div>
@@ -1508,7 +1683,7 @@ function BrandOutroSlide({
             <span
               className={cn(
                 'inline-flex items-center gap-1.5 rounded-full border border-[hsl(38_52%_60%/0.4)] bg-[hsl(38_52%_60%/0.15)] font-semibold uppercase tracking-[0.2em] text-[hsl(38_52%_70%)]',
-                isPortrait ? 'px-2.5 py-0.5 text-[0.65rem]' : 'px-[1vw] py-[0.4vh] text-[0.85vw]',
+                isPortrait ? 'px-2.5 py-0.5 text-[0.62rem]' : 'px-[1vw] py-[0.4vh] text-[0.85vw]',
               )}
             >
               <Sparkles className={isPortrait ? 'size-3' : 'size-[0.95vw]'} />
@@ -1517,9 +1692,11 @@ function BrandOutroSlide({
             <h1
               className={cn(
                 'mt-1.5 font-display font-semibold leading-[1.02] tracking-tight text-white',
-                isPortrait
-                  ? 'text-[clamp(1.65rem,4vmin,2.4rem)]'
-                  : 'text-[clamp(2.2rem,4.2vw,5rem)]',
+                isMobile
+                  ? 'text-[clamp(1.45rem,5.5vw,2rem)]'
+                  : isPortrait
+                    ? 'text-[clamp(1.65rem,4vmin,2.4rem)]'
+                    : 'text-[clamp(2.2rem,4.2vw,5rem)]',
               )}
             >
               {contact.name}
@@ -1532,7 +1709,7 @@ function BrandOutroSlide({
           className={cn(
             'font-display italic text-[hsl(38_52%_68%)]',
             isPortrait
-              ? 'mt-3 text-[clamp(1rem,2.2vmin,1.3rem)]'
+              ? 'mt-2.5 text-[clamp(0.95rem,2.2vmin,1.25rem)]'
               : 'mt-[2.4vh] max-w-[50vw] text-[clamp(1.2rem,2vw,2.4rem)]',
           )}
         >
@@ -1541,7 +1718,7 @@ function BrandOutroSlide({
 
         <motion.ul
           variants={ITEM}
-          className={cn(isPortrait ? 'mt-3 space-y-2' : 'mt-[3vh] space-y-[1.4vh]')}
+          className={cn(isPortrait ? 'mt-2.5 space-y-2' : 'mt-[3vh] space-y-[1.4vh]')}
         >
           {pillars.map(({ icon: Icon, label }) => (
             <li
@@ -1569,108 +1746,146 @@ function BrandOutroSlide({
           className={cn(
             'flex flex-wrap items-center border-t border-white/15 text-white/75',
             isPortrait
-              ? 'mt-3 gap-2 pt-2.5 text-xs'
+              ? 'mt-2.5 gap-2 pt-2 text-[0.72rem]'
               : 'mt-[3.2vh] gap-[2vw] pt-[2.2vh] text-[1.05vw]',
           )}
         >
           {contact.officeAddress ? (
             <span className="flex items-center gap-1.5">
-              <MapPin className="size-4 shrink-0 text-[hsl(38_52%_60%)]" />
+              <MapPin className="size-3.5 shrink-0 text-[hsl(38_52%_60%)]" />
               {contact.officeAddress}
             </span>
           ) : null}
           {contact.hours ? (
             <span className="flex items-center gap-1.5">
-              <Clock3 className="size-4 shrink-0 text-[hsl(38_52%_60%)]" />
+              <Clock3 className="size-3.5 shrink-0 text-[hsl(38_52%_60%)]" />
               {contact.hours}
             </span>
           ) : null}
         </motion.div>
       </div>
 
-      {/* Right / Bottom QR Action Card */}
-      <motion.div
-        variants={ITEM}
-        className={cn(
-          'tick-frame border border-white/20 bg-black/65 shadow-2xl backdrop-blur-xl',
-          isPortrait
-            ? 'flex items-center justify-between gap-4 rounded-2xl p-4'
-            : 'col-span-5 flex flex-col items-center rounded-[1.6vw] p-[2.4vw] text-center',
-        )}
-      >
-        <div className={cn(isPortrait ? 'min-w-0 flex-1' : 'flex flex-col items-center')}>
-          <span
-            className={cn(
-              'inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.22em] text-[hsl(38_52%_60%)]',
-              isPortrait ? 'text-[0.65rem]' : 'text-[0.9vw]',
-            )}
-          >
-            <QrCode className={isPortrait ? 'size-3.5' : 'size-[1.1vw]'} />
-            Catálogo Digital y WhatsApp
-          </span>
+      {/* Right / Bottom Action Card: Direct Touch Buttons on Mobile vs QR Card on TV/Totem */}
+      {isMobile ? (
+        <motion.div
+          variants={ITEM}
+          className="rounded-2xl border border-white/20 bg-black/75 p-3.5 shadow-2xl backdrop-blur-xl"
+        >
+          <div className="mb-2.5 flex items-center justify-between text-xs text-white/80">
+            <span className="font-semibold uppercase tracking-wider text-[hsl(38_52%_60%)]">
+              Contacto Directo
+            </span>
+            <a
+              href={`tel:${contact.phone.replace(/\s+/g, '')}`}
+              className="flex items-center gap-1 font-bold tabular-nums text-white"
+            >
+              <Phone className="size-3.5 text-[hsl(38_52%_60%)]" />
+              {contact.phone}
+            </a>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <a
+              href={qrUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-1.5 rounded-xl bg-[hsl(38_52%_60%)] px-3 py-2.5 text-xs font-bold uppercase tracking-wider text-[hsl(40_40%_10%)] shadow-md active:scale-[0.98]"
+            >
+              <MessageCircle className="size-4" />
+              WhatsApp
+            </a>
+            <Link
+              href="/properties"
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-white active:scale-[0.98]"
+            >
+              <ExternalLink className="size-3.5 text-[hsl(38_52%_60%)]" />
+              Catálogo
+            </Link>
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          variants={ITEM}
+          className={cn(
+            'tick-frame border border-white/20 bg-black/65 shadow-2xl backdrop-blur-xl',
+            isPortrait
+              ? 'flex items-center justify-between gap-4 rounded-2xl p-4'
+              : 'col-span-5 flex flex-col items-center rounded-[1.6vw] p-[2.4vw] text-center',
+          )}
+        >
+          <div className={cn(isPortrait ? 'min-w-0 flex-1' : 'flex flex-col items-center')}>
+            <span
+              className={cn(
+                'inline-flex items-center gap-1.5 font-semibold uppercase tracking-[0.22em] text-[hsl(38_52%_60%)]',
+                isPortrait ? 'text-[0.65rem]' : 'text-[0.9vw]',
+              )}
+            >
+              <QrCode className={isPortrait ? 'size-3.5' : 'size-[1.1vw]'} />
+              Catálogo Digital y WhatsApp
+            </span>
 
-          <h2
-            className={cn(
-              'font-display font-semibold text-white',
-              isPortrait ? 'mt-1 text-lg' : 'mt-[0.8vh] text-[2.1vw]',
-            )}
-          >
-            Escanea con tu celular
-          </h2>
-          <p
-            className={cn(
-              'text-white/65',
-              isPortrait ? 'mt-0.5 text-xs' : 'mt-[0.4vh] text-[0.95vw]',
-            )}
-          >
-            {propertyCount > 0
-              ? 'Explora nuestras propiedades o conversa con un asesor ahora mismo'
-              : 'Contáctanos por WhatsApp o visita nuestro catálogo en línea'}
-          </p>
+            <h2
+              className={cn(
+                'font-display font-semibold text-white',
+                isPortrait ? 'mt-1 text-lg' : 'mt-[0.8vh] text-[2.1vw]',
+              )}
+            >
+              Escanea con tu celular
+            </h2>
+            <p
+              className={cn(
+                'text-white/65',
+                isPortrait ? 'mt-0.5 text-xs' : 'mt-[0.4vh] text-[0.95vw]',
+              )}
+            >
+              {propertyCount > 0
+                ? 'Explora nuestras propiedades o conversa con un asesor ahora mismo'
+                : 'Contáctanos por WhatsApp o visita nuestro catálogo en línea'}
+            </p>
+
+            <div
+              className={cn(
+                'w-full',
+                isPortrait
+                  ? 'mt-2.5 space-y-1 border-t border-white/15 pt-2'
+                  : 'mt-[1.8vh] space-y-[0.8vh]',
+              )}
+            >
+              <p
+                className={cn(
+                  'flex items-center gap-2 font-bold tabular-nums text-white',
+                  isPortrait ? 'text-lg' : 'justify-center text-[2vw]',
+                )}
+              >
+                <Phone
+                  className={cn('text-[hsl(38_52%_60%)]', isPortrait ? 'size-4' : 'size-[1.6vw]')}
+                />
+                {contact.phone}
+              </p>
+              <p
+                className={cn(
+                  'flex items-center gap-1.5 text-[hsl(38_52%_68%)]',
+                  isPortrait ? 'text-xs' : 'justify-center text-[1.15vw]',
+                )}
+              >
+                <Globe className={isPortrait ? 'size-3.5' : 'size-[1.15vw]'} />
+                {contact.site}
+              </p>
+            </div>
+          </div>
 
           <div
             className={cn(
-              'w-full',
-              isPortrait
-                ? 'mt-2.5 space-y-1 border-t border-white/15 pt-2'
-                : 'mt-[1.8vh] space-y-[0.8vh]',
+              'shrink-0 rounded-2xl bg-white shadow-2xl ring-4 ring-[hsl(38_52%_60%/0.55)]',
+              isPortrait ? 'p-1.5' : 'my-[2vh] p-[0.7vw]',
             )}
           >
-            <p
-              className={cn(
-                'flex items-center gap-2 font-bold tabular-nums text-white',
-                isPortrait ? 'text-lg' : 'justify-center text-[2vw]',
-              )}
-            >
-              <Phone
-                className={cn('text-[hsl(38_52%_60%)]', isPortrait ? 'size-4' : 'size-[1.6vw]')}
-              />
-              {contact.phone}
-            </p>
-            <p
-              className={cn(
-                'flex items-center gap-1.5 text-[hsl(38_52%_68%)]',
-                isPortrait ? 'text-xs' : 'justify-center text-[1.15vw]',
-              )}
-            >
-              <Globe className={isPortrait ? 'size-3.5' : 'size-[1.15vw]'} />
-              {contact.site}
-            </p>
+            <QrCodeSvg
+              value={qrUrl}
+              className={isPortrait ? 'size-24' : 'size-[11.5vw] min-h-28 min-w-28'}
+            />
           </div>
-        </div>
-
-        <div
-          className={cn(
-            'shrink-0 rounded-2xl bg-white shadow-2xl ring-4 ring-[hsl(38_52%_60%/0.55)]',
-            isPortrait ? 'p-1.5' : 'my-[2vh] p-[0.7vw]',
-          )}
-        >
-          <QrCodeSvg
-            value={qrUrl}
-            className={isPortrait ? 'size-24' : 'size-[11.5vw] min-h-28 min-w-28'}
-          />
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
     </motion.section>
   );
 }
@@ -1683,11 +1898,13 @@ function WeatherWidget({
   coordinates,
   initialWeather,
   compact = false,
+  ultraCompact = false,
 }: {
   city: string;
   coordinates: { lat: number; lng: number };
   initialWeather: SlideshowWeather | null;
   compact?: boolean;
+  ultraCompact?: boolean;
 }) {
   const [weather, setWeather] = React.useState<SlideshowWeather | null>(initialWeather);
   const [fallbackWeather, setFallbackWeather] = React.useState<SlideshowWeather | null>(null);
@@ -1746,6 +1963,17 @@ function WeatherWidget({
   if (!current) return null;
 
   const { Icon, label } = describeWeather(current.weatherCode, current.isDay);
+
+  if (ultraCompact) {
+    return (
+      <div className="flex items-center gap-1">
+        <Icon className="size-3.5 text-[hsl(38_52%_65%)]" />
+        <span className="font-mono text-xs font-bold tabular-nums text-white">
+          {current.tempC}°C
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">
@@ -1815,7 +2043,13 @@ function describeWeather(code: number, isDay: boolean) {
 }
 
 /** Rendered client-only to avoid a server/client time mismatch on hydration. */
-function ClockWidget({ compact = false }: { compact?: boolean }) {
+function ClockWidget({
+  compact = false,
+  ultraCompact = false,
+}: {
+  compact?: boolean;
+  ultraCompact?: boolean;
+}) {
   const [now, setNow] = React.useState<Date | null>(null);
   React.useEffect(() => {
     const update = () => setNow(new Date());
@@ -1834,6 +2068,10 @@ function ClockWidget({ compact = false }: { compact?: boolean }) {
     day: 'numeric',
     month: 'short',
   });
+
+  if (ultraCompact) {
+    return <span className="font-mono text-xs font-bold tabular-nums text-white">{timeStr}</span>;
+  }
 
   return (
     <div className="flex items-center gap-2">

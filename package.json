@@ -81,6 +81,13 @@
   "engines": {
     "node": ">=20.19.0"
   },
+  "browserslist": [
+    "chrome >= 53",
+    "safari >= 11",
+    "ios_saf >= 11",
+    "firefox >= 54",
+    "edge >= 79"
+  ],
   "overrides": {
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
